@@ -8,7 +8,7 @@ import { AppConfigProvider } from '@/components/AppConfigProvider';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'Ethora Agent Onboarding',
+  title: 'Gogol Agent Onboarding',
   description: 'Create and manage AI agents',
 };
 

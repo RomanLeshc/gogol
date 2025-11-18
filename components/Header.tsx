@@ -38,7 +38,7 @@ export function Header() {
               href="/"
               className="text-xl font-bold text-gray-900 dark:text-white"
             >
-              Ethora Agents
+              Gogol Agents
             </Link>
             {currentUser && (
               <nav className="hidden md:flex items-center gap-6">

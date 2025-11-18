@@ -1,4 +1,4 @@
-# Ethora AI Agent Onboarding Platform
+# Gogol AI Agent Onboarding Platform
 
 A Next.js application for creating and managing AI agents with onboarding flow, chat widget, and simplified admin interface.
 

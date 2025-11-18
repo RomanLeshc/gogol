@@ -1,5 +1,5 @@
 {
-  "name": "ethora-agent-onboarding",
+  "name": "gogol-agent-onboarding",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -41,4 +41,3 @@
     "@types/jest": "^29.5.11"
   }
 }
-

@@ -1,5 +1,5 @@
 /**
- * Ethora AI Agent Embed Script
+ * Gogol AI Agent Embed Script
  * 
  * Usage:
  * <script src="https://your-domain.com/embed.js" data-agent-id="YOUR_AGENT_ID" data-api-base="https://api.ethoradev.com/v1"></script>
@@ -21,7 +21,7 @@
   const theme = scriptTag?.getAttribute('data-theme') || 'light';
 
   if (!agentId) {
-    console.error('Ethora Widget: agent-id is required');
+    console.error('Gogol Widget: agent-id is required');
     return;
   }
 
