@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react';
 import { initializeAppConfig } from '@/lib/appConfig';
 import { httpTokens } from '@/lib/api';
+import { initializeFirebase } from '@/lib/firebase';
+import { useAppStore } from '@/lib/store';
 import { Loading } from './Loading';
 
 interface AppConfigProviderProps {
@@ -13,6 +15,7 @@ export function AppConfigProvider({ children }: AppConfigProviderProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [configLoaded, setConfigLoaded] = useState(false);
+  const { doSetCurrentApp } = useAppStore();
 
   useEffect(() => {
     const loadConfig = async () => {
@@ -21,7 +24,7 @@ export function AppConfigProvider({ children }: AppConfigProviderProps) {
         const domainName = process.env.NEXT_PUBLIC_DOMAIN_NAME || 'app';
         console.log('Loading app config with domainName:', domainName);
         
-        await initializeAppConfig(domainName);
+        const appConfig = await initializeAppConfig(domainName);
         
         // Verify appJwt was set and is not empty
         if (!httpTokens.appJwt || httpTokens.appJwt.trim().length === 0) {
@@ -34,6 +37,17 @@ export function AppConfigProvider({ children }: AppConfigProviderProps) {
         if (!httpTokens.appJwt.startsWith('JWT ')) {
           console.warn('⚠️ appJwt does not start with "JWT ", adding prefix');
           httpTokens.appJwt = `JWT ${httpTokens.appJwt}`;
+        }
+        
+        // Store app config in store
+        doSetCurrentApp(appConfig);
+        
+        // Initialize Firebase if config is available
+        if (appConfig.firebaseWebConfigString || appConfig.firebaseConfigParsed) {
+          initializeFirebase(appConfig);
+          console.log('✅ Firebase initialized from app config');
+        } else {
+          console.warn('⚠️ Firebase config not found in app config');
         }
         
         console.log('✅ App config loaded successfully');
@@ -54,7 +68,7 @@ export function AppConfigProvider({ children }: AppConfigProviderProps) {
     };
 
     loadConfig();
-  }, []);
+  }, [doSetCurrentApp]);
 
   if (loading) {
     return <Loading />;

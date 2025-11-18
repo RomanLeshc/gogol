@@ -117,11 +117,28 @@ export default function RegisterPage() {
   };
 
   const handleSocialRegister = async (provider: 'google' | 'apple' | 'facebook') => {
+    if (provider !== 'google') {
+      toast.info(`${provider} registration integration coming soon`);
+      return;
+    }
+
     setLoading(true);
-    // Note: This is a simplified version. In production, you'd integrate with
-    // the actual OAuth providers (Google, Apple, Facebook)
-    toast.info(`${provider} registration integration needed`);
-    setLoading(false);
+
+    try {
+      const { handleGoogleRegister } = await import('@/lib/firebaseAuth');
+      const utm = getUtmParams();
+      const signUpPlan = searchParams.get('plan') || undefined;
+      
+      await handleGoogleRegister(signUpPlan, utm);
+      
+      // Redirect to home (which will check for onboarding)
+      router.push('/');
+    } catch (error: any) {
+      console.error('Social registration error:', error);
+      // Error message already shown in handleGoogleRegister
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -265,19 +282,26 @@ export default function RegisterPage() {
           <div className="mt-6 grid grid-cols-3 gap-3">
             <button
               onClick={() => handleSocialRegister('google')}
-              className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm bg-white dark:bg-gray-800 text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700"
+              disabled={loading}
+              className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm bg-white dark:bg-gray-800 text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Google
+              {loading ? (
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-500"></div>
+              ) : (
+                'Google'
+              )}
             </button>
             <button
               onClick={() => handleSocialRegister('apple')}
-              className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm bg-white dark:bg-gray-800 text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700"
+              disabled={loading}
+              className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm bg-white dark:bg-gray-800 text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Apple
             </button>
             <button
               onClick={() => handleSocialRegister('facebook')}
-              className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm bg-white dark:bg-gray-800 text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700"
+              disabled={loading}
+              className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm bg-white dark:bg-gray-800 text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Facebook
             </button>

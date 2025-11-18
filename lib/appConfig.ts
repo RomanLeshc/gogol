@@ -5,8 +5,9 @@
  */
 
 import { httpGetConfig, httpTokens } from './api';
+import { ModelApp } from './types';
 
-export async function initializeAppConfig(domainName?: string) {
+export async function initializeAppConfig(domainName?: string): Promise<ModelApp> {
   try {
     console.log('🔍 Fetching app config with domainName:', domainName || 'none');
     
@@ -51,7 +52,8 @@ export async function initializeAppConfig(domainName?: string) {
     console.log('✅ appJwt preview:', httpTokens.appJwt.substring(0, 60) + '...');
     console.log('✅ appJwt starts with JWT:', httpTokens.appJwt.startsWith('JWT '));
     
-    return result;
+    // Return the full app config as ModelApp
+    return result as ModelApp;
   } catch (error: any) {
     console.error('❌ Failed to initialize app config');
     console.error('❌ Error:', error.message);
