@@ -40,9 +40,14 @@ export default function OnboardPage() {
           orgId: data.user.orgId,
           theme: data.user.theme as 'light' | 'dark' | 'system' | undefined,
         });
-      } catch (error) {
-        // Not authenticated, redirect to login
-        router.push('/login');
+      } catch (error: any) {
+        // Only redirect to login on authentication errors (401)
+        if (error?.response?.status === 401) {
+          router.push('/login');
+        } else {
+          // Other errors - log but don't auto-logout
+          console.error('Non-auth error during auth check:', error?.response?.data || error?.message);
+        }
       }
     };
 

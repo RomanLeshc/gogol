@@ -65,9 +65,19 @@ export default function AgentsPage() {
         // Load apps/agents
         const { data: appsData } = await httpGetApps({});
         doSetApps(appsData.apps || []);
-      } catch (error) {
+      } catch (error: any) {
         console.error('Failed to load data:', error);
-        router.push('/login');
+        
+        // Only redirect to login on authentication errors (401)
+        // Don't logout on validation errors (400) or other API errors
+        if (error?.response?.status === 401) {
+          router.push('/login');
+        } else {
+          // Other errors - show error but don't logout
+          console.error('Non-auth error during data load:', error?.response?.data || error?.message);
+          // Set empty apps array to prevent infinite loops
+          doSetApps([]);
+        }
       } finally {
         setLoading(false);
       }

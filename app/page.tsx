@@ -27,7 +27,8 @@ export default function HomePage() {
         }
         
         // Check if user has completed onboarding (has at least one app/agent)
-        const { data: appsData } = await httpGetApps({ limit: 1 });
+        // Use limit 5 (API minimum requirement) but we only need to check if any exist
+        const { data: appsData } = await httpGetApps({ limit: 5 });
         doSetApps(appsData.apps || []);
         
         if (!appsData.apps || appsData.apps.length === 0) {
@@ -35,10 +36,21 @@ export default function HomePage() {
           router.push('/onboard');
           return;
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error('Auth check error:', error);
-        // Not authenticated, redirect to login
-        router.push('/login');
+        
+        // Only redirect to login on authentication errors (401)
+        // Don't logout on validation errors (400) or other API errors
+        if (error?.response?.status === 401) {
+          // Authentication failed, redirect to login
+          router.push('/login');
+        } else {
+          // Other errors (validation, network, etc.) - show error but don't logout
+          console.error('Non-auth error during app check:', error?.response?.data || error?.message);
+          toast.error(error?.response?.data?.error || 'Failed to load apps. Please try again.');
+          // Still set empty apps array to prevent infinite loops
+          doSetApps([]);
+        }
       }
     };
 

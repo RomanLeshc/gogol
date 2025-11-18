@@ -688,8 +688,11 @@ export function httpGetApps({
     });
   }
 
+  // Ensure limit is at least 5 (API requirement)
+  const validLimit = Math.max(limit, 5);
+
   return http.get(
-    `/apps?limit=${limit}&offset=${offset}&order=${order}&orderBy=${orderBy}`
+    `/apps?limit=${validLimit}&offset=${offset}&order=${order}&orderBy=${orderBy}`
   );
 }
 
