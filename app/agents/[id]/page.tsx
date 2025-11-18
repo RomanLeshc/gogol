@@ -29,6 +29,7 @@ export default function AgentDetailPage() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<Tab>('overview');
   const [saving, setSaving] = useState(false);
+  const [copiedEmbed, setCopiedEmbed] = useState<'script' | 'npm' | null>(null);
   
   // Indexing state
   const [newUrl, setNewUrl] = useState('');
@@ -94,6 +95,44 @@ export default function AgentDetailPage() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [agentId]);
+
+  // Handle hash navigation to open overview tab
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hash = window.location.hash;
+      if (hash === '#overview' || hash === '') {
+        setActiveTab('overview');
+      }
+    };
+
+    // Check hash on mount
+    handleHashChange();
+
+    // Listen for hash changes
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
+
+  const copyToClipboard = (text: string, type: 'script' | 'npm') => {
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(text).then(() => {
+        setCopiedEmbed(type);
+        toast.success('Copied to clipboard!');
+        setTimeout(() => setCopiedEmbed(null), 2000);
+      });
+    } else {
+      // Fallback for older browsers
+      const textArea = document.createElement('textarea');
+      textArea.value = text;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+      setCopiedEmbed(type);
+      toast.success('Copied to clipboard!');
+      setTimeout(() => setCopiedEmbed(null), 2000);
+    }
+  };
 
   const handleDelete = async () => {
     if (!app || !confirm(`Are you sure you want to delete "${app.displayName}"?`)) {
@@ -336,6 +375,106 @@ export default function AgentDetailPage() {
                     </dd>
                   </div>
                 </dl>
+              </div>
+
+              {/* Embed Code Section */}
+              <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                  Embed Code
+                </h2>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                  Copy the code below to embed this AI agent on your website.
+                </p>
+
+                {/* Script Embed */}
+                <div className="mb-6">
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Script Embed
+                    </label>
+                    <button
+                      onClick={() => {
+                        const apiBase =
+                          process.env.NEXT_PUBLIC_API_BASE ||
+                          process.env.NEXT_PUBLIC_API_V1 ||
+                          'https://api.ethoradev.com/v1';
+                        const embedKey = process.env.NEXT_PUBLIC_EMBED_KEY || '';
+                        const scriptSnippet = `<script src="${typeof window !== 'undefined' ? window.location.origin : ''}/embed.js" data-agent-id="${agentId}" data-api-base="${apiBase}" data-embed-key="${embedKey}" data-position="bottom-right"></script>`;
+                        copyToClipboard(scriptSnippet, 'script');
+                      }}
+                      className={`px-3 py-1.5 text-sm rounded-md ${
+                        copiedEmbed === 'script'
+                          ? 'bg-green-500 text-white'
+                          : 'bg-brand-500 text-white hover:bg-brand-600'
+                      } transition-colors`}
+                    >
+                      {copiedEmbed === 'script' ? '✓ Copied' : 'Copy Script'}
+                    </button>
+                  </div>
+                  <pre className="bg-gray-50 dark:bg-gray-900 rounded-md p-4 overflow-x-auto text-sm border border-gray-200 dark:border-gray-700">
+                    <code className="text-gray-900 dark:text-gray-100">
+                      {`<script src="${typeof window !== 'undefined' ? window.location.origin : ''}/embed.js" data-agent-id="${agentId}" data-api-base="${process.env.NEXT_PUBLIC_API_BASE || process.env.NEXT_PUBLIC_API_V1 || 'https://api.ethoradev.com/v1'}" data-embed-key="${process.env.NEXT_PUBLIC_EMBED_KEY || ''}" data-position="bottom-right"></script>`}
+                    </code>
+                  </pre>
+                  <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                    Add this script tag to your HTML page to embed the chat widget.
+                  </p>
+                </div>
+
+                {/* NPM Package */}
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                      NPM Package
+                    </label>
+                    <button
+                      onClick={() => {
+                        const apiBase =
+                          process.env.NEXT_PUBLIC_API_BASE ||
+                          process.env.NEXT_PUBLIC_API_V1 ||
+                          'https://api.ethoradev.com/v1';
+                        const embedKey = process.env.NEXT_PUBLIC_EMBED_KEY || '';
+                        const npmSnippet = `npm install @ethora/ai-widget
+
+import { initEthoraWidget } from '@ethora/ai-widget';
+
+initEthoraWidget({
+  agentId: '${agentId}',
+  apiBase: '${apiBase}',
+  embedKey: '${embedKey}',
+  position: 'bottom-right',
+  theme: 'light'
+});`;
+                        copyToClipboard(npmSnippet, 'npm');
+                      }}
+                      className={`px-3 py-1.5 text-sm rounded-md ${
+                        copiedEmbed === 'npm'
+                          ? 'bg-green-500 text-white'
+                          : 'bg-brand-500 text-white hover:bg-brand-600'
+                      } transition-colors`}
+                    >
+                      {copiedEmbed === 'npm' ? '✓ Copied' : 'Copy NPM'}
+                    </button>
+                  </div>
+                  <pre className="bg-gray-50 dark:bg-gray-900 rounded-md p-4 overflow-x-auto text-sm border border-gray-200 dark:border-gray-700">
+                    <code className="text-gray-900 dark:text-gray-100">
+                      {`npm install @ethora/ai-widget
+
+import { initEthoraWidget } from '@ethora/ai-widget';
+
+initEthoraWidget({
+  agentId: '${agentId}',
+  apiBase: '${process.env.NEXT_PUBLIC_API_BASE || process.env.NEXT_PUBLIC_API_V1 || 'https://api.ethoradev.com/v1'}',
+  embedKey: '${process.env.NEXT_PUBLIC_EMBED_KEY || ''}',
+  position: 'bottom-right',
+  theme: 'light'
+});`}
+                    </code>
+                  </pre>
+                  <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                    Install the npm package and initialize the widget in your React/Next.js app.
+                  </p>
+                </div>
               </div>
             </div>
           )}

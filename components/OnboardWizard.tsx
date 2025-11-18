@@ -13,15 +13,11 @@ import { useAppStore } from '@/lib/store';
 import { toast } from 'react-toastify';
 import { FileUploader } from './FileUploader';
 
-type SourceType = 'website' | 'documents' | null;
-type Step = 'source' | 'configure' | 'settings' | 'finalize';
+type Step = 'sources' | 'add-website' | 'add-documents' | 'settings' | 'finalize';
 
-interface WebsiteConfig {
+interface WebsiteSource {
   url: string;
   followLink: boolean;
-  crawlDepth?: number;
-  respectRobots?: boolean;
-  useSitemap?: boolean;
 }
 
 interface AgentSettings {
@@ -34,18 +30,13 @@ interface AgentSettings {
 export function OnboardWizard() {
   const router = useRouter();
   const { doAddApp } = useAppStore();
-  const [step, setStep] = useState<Step>('source');
-  const [sourceType, setSourceType] = useState<SourceType>(null);
+  const [step, setStep] = useState<Step>('sources');
   const [loading, setLoading] = useState(false);
   
-  // Website configuration
-  const [websiteConfig, setWebsiteConfig] = useState<WebsiteConfig>({
-    url: '',
-    followLink: true,
-    crawlDepth: 3,
-    respectRobots: true,
-    useSitemap: false,
-  });
+  // Multiple website sources
+  const [websiteSources, setWebsiteSources] = useState<WebsiteSource[]>([]);
+  const [currentWebsiteUrl, setCurrentWebsiteUrl] = useState('');
+  const [currentFollowLink, setCurrentFollowLink] = useState(true);
   
   // Document upload
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
@@ -59,27 +50,32 @@ export function OnboardWizard() {
     isPublic: false,
   });
 
-  const handleSourceSelect = (type: SourceType) => {
-    setSourceType(type);
-    setStep('configure');
-  };
-
-  const handleWebsiteSubmit = async () => {
-    if (!websiteConfig.url) {
+  const handleAddWebsite = () => {
+    if (!currentWebsiteUrl.trim()) {
       toast.error('Please enter a website URL');
       return;
     }
-
-    setStep('settings');
+    
+    setWebsiteSources([...websiteSources, {
+      url: currentWebsiteUrl.trim(),
+      followLink: currentFollowLink,
+    }]);
+    setCurrentWebsiteUrl('');
+    setCurrentFollowLink(true);
+    toast.success('Website added');
   };
 
-  const handleDocumentsSubmit = async () => {
-    if (uploadedFiles.length === 0) {
-      toast.error('Please upload at least one document');
-      return;
-    }
+  const handleRemoveWebsite = (index: number) => {
+    setWebsiteSources(websiteSources.filter((_, i) => i !== index));
+  };
 
-    setStep('settings');
+  const handleContinueFromSources = () => {
+    // If nothing added, go to settings. Otherwise, show what was added and allow continuing
+    if (websiteSources.length === 0 && uploadedFiles.length === 0) {
+      setStep('settings');
+    } else {
+      setStep('settings');
+    }
   };
 
   const handleFinalize = async () => {
@@ -95,17 +91,17 @@ export function OnboardWizard() {
       const { data: appData } = await httpCreateNewApp(agentSettings.name);
       const appId = appData.app._id;
 
-      // Step 2: Configure source based on type (optional - can be skipped)
-      if (sourceType === 'website') {
-        // Add website crawl source
-        await setSourcesSiteCrawl(
-          appId,
-          websiteConfig.url,
-          websiteConfig.followLink
+      // Step 2: Add website sources (if any)
+      if (websiteSources.length > 0) {
+        const websitePromises = websiteSources.map((source) =>
+          setSourcesSiteCrawl(appId, source.url, source.followLink)
         );
-        toast.success('Website indexing started');
-      } else if (sourceType === 'documents') {
-        // Upload documents
+        await Promise.all(websitePromises);
+        toast.success(`${websiteSources.length} website(s) indexing started`);
+      }
+
+      // Step 3: Upload documents (if any)
+      if (uploadedFiles.length > 0) {
         const uploadPromises = uploadedFiles.map(async (file) => {
           try {
             setUploadProgress((prev) => ({ ...prev, [file.name]: 0 }));
@@ -118,9 +114,10 @@ export function OnboardWizard() {
         });
 
         await Promise.all(uploadPromises);
-        toast.success('Documents uploaded successfully');
+        toast.success(`${uploadedFiles.length} document(s) uploaded successfully`);
       }
-      // If sourceType is null, user skipped adding sources - that's fine!
+      
+      // If no sources added, that's fine - user can add them later!
 
       // Step 3: Update app with agent settings if provided
       // Note: The API might need additional endpoints for updating agent-specific settings
@@ -136,8 +133,8 @@ export function OnboardWizard() {
       doAddApp(appData.app);
       toast.success('Agent created successfully!');
       
-      // Redirect to agent detail page where they can add sources later
-      router.push(`/agents/${appId}`);
+      // Redirect to agent detail page with overview tab open
+      router.push(`/agents/${appId}#overview`);
     } catch (error: any) {
       console.error('Agent creation error:', error);
       toast.error(error.response?.data?.message || 'Failed to create agent');
@@ -161,30 +158,24 @@ export function OnboardWizard() {
         {/* Progress indicator */}
         <div className="mb-8">
           <div className="flex items-center justify-between">
-            {(['source', 'configure', 'settings', 'finalize'] as Step[]).map(
+            {(['sources', 'settings', 'finalize'] as Step[]).map(
               (s, index) => (
                 <div key={s} className="flex items-center flex-1">
                   <div
                     className={`flex items-center justify-center w-10 h-10 rounded-full border-2 ${
                       step === s
                         ? 'border-brand-500 bg-brand-500 text-white'
-                        : index <
-                          (['source', 'configure', 'settings', 'finalize'] as Step[]).indexOf(
-                            step
-                          )
+                        : ['sources', 'settings', 'finalize'].indexOf(step) > index
                         ? 'border-green-500 bg-green-500 text-white'
                         : 'border-gray-300 dark:border-gray-700 text-gray-500 dark:text-gray-400'
                     }`}
                   >
                     {index + 1}
                   </div>
-                  {index < 3 && (
+                  {index < 2 && (
                     <div
                       className={`flex-1 h-1 mx-2 ${
-                        index <
-                        (['source', 'configure', 'settings', 'finalize'] as Step[]).indexOf(
-                          step
-                        )
+                        ['sources', 'settings', 'finalize'].indexOf(step) > index
                           ? 'bg-green-500'
                           : 'bg-gray-300 dark:bg-gray-700'
                       }`}
@@ -198,201 +189,117 @@ export function OnboardWizard() {
 
         {/* Step content */}
         <AnimatePresence mode="wait">
-          {step === 'source' && (
+          {step === 'sources' && (
             <motion.div
-              key="source"
+              key="sources"
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
               className="bg-white dark:bg-gray-800 rounded-lg shadow p-8"
             >
               <h2 className="text-2xl font-semibold mb-6 text-gray-900 dark:text-white">
-                Choose Knowledge Source
+                Add Knowledge Sources
               </h2>
-              <div className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <button
-                    onClick={() => handleSourceSelect('website')}
-                    className="p-6 border-2 border-gray-300 dark:border-gray-700 rounded-lg hover:border-brand-500 dark:hover:border-brand-500 transition-colors text-left"
-                  >
-                    <div className="text-3xl mb-3">🌐</div>
-                    <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">
-                      Website URL
-                    </h3>
-                    <p className="text-gray-600 dark:text-gray-400">
-                      Index content from a website by providing a URL
-                    </p>
-                  </button>
-                  <button
-                    onClick={() => handleSourceSelect('documents')}
-                    className="p-6 border-2 border-gray-300 dark:border-gray-700 rounded-lg hover:border-brand-500 dark:hover:border-brand-500 transition-colors text-left"
-                  >
-                    <div className="text-3xl mb-3">📄</div>
-                    <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">
-                      Upload Documents
-                    </h3>
-                    <p className="text-gray-600 dark:text-gray-400">
-                      Upload PDF, DOCX, or TXT files
-                    </p>
-                  </button>
-                </div>
-                <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
-                  <button
-                    onClick={() => {
-                      setSourceType(null);
-                      setStep('settings');
-                    }}
-                    className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
-                  >
-                    Skip for now - I'll add sources later
-                  </button>
-                </div>
-              </div>
-            </motion.div>
-          )}
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
+                Add website URLs and/or documents to train your AI agent. You can add both, one, or skip and add later.
+              </p>
 
-          {step === 'configure' && sourceType === 'website' && (
-            <motion.div
-              key="website-config"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              className="bg-white dark:bg-gray-800 rounded-lg shadow p-8"
-            >
-              <h2 className="text-2xl font-semibold mb-6 text-gray-900 dark:text-white">
-                Website Configuration
-              </h2>
-              <div className="space-y-6">
-                <div>
-                  <label
-                    htmlFor="url"
-                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-                  >
-                    Website URL
-                  </label>
+              {/* Website Sources Section */}
+              <div className="mb-8 space-y-4">
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white">
+                  Website Indexing
+                </h3>
+                <div className="flex gap-2">
                   <input
-                    id="url"
                     type="url"
-                    value={websiteConfig.url}
-                    onChange={(e) =>
-                      setWebsiteConfig({ ...websiteConfig, url: e.target.value })
-                    }
-                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-brand-500 focus:border-brand-500"
+                    value={currentWebsiteUrl}
+                    onChange={(e) => setCurrentWebsiteUrl(e.target.value)}
+                    className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-brand-500 focus:border-brand-500"
                     placeholder="https://example.com"
                   />
-                </div>
-                <div className="flex items-center">
-                  <input
-                    id="followLink"
-                    type="checkbox"
-                    checked={websiteConfig.followLink}
-                    onChange={(e) =>
-                      setWebsiteConfig({
-                        ...websiteConfig,
-                        followLink: e.target.checked,
-                      })
-                    }
-                    className="h-4 w-4 text-brand-500 focus:ring-brand-500 border-gray-300 rounded"
-                  />
-                  <label
-                    htmlFor="followLink"
-                    className="ml-2 block text-sm text-gray-700 dark:text-gray-300"
-                  >
-                    Follow links (crawl depth: {websiteConfig.crawlDepth})
-                  </label>
-                </div>
-                <div className="flex items-center">
-                  <input
-                    id="respectRobots"
-                    type="checkbox"
-                    checked={websiteConfig.respectRobots}
-                    onChange={(e) =>
-                      setWebsiteConfig({
-                        ...websiteConfig,
-                        respectRobots: e.target.checked,
-                      })
-                    }
-                    className="h-4 w-4 text-brand-500 focus:ring-brand-500 border-gray-300 rounded"
-                  />
-                  <label
-                    htmlFor="respectRobots"
-                    className="ml-2 block text-sm text-gray-700 dark:text-gray-300"
-                  >
-                    Respect robots.txt
-                  </label>
-                </div>
-                <div className="flex items-center">
-                  <input
-                    id="useSitemap"
-                    type="checkbox"
-                    checked={websiteConfig.useSitemap}
-                    onChange={(e) =>
-                      setWebsiteConfig({
-                        ...websiteConfig,
-                        useSitemap: e.target.checked,
-                      })
-                    }
-                    className="h-4 w-4 text-brand-500 focus:ring-brand-500 border-gray-300 rounded"
-                  />
-                  <label
-                    htmlFor="useSitemap"
-                    className="ml-2 block text-sm text-gray-700 dark:text-gray-300"
-                  >
-                    Use sitemap.xml
-                  </label>
-                </div>
-                <div className="flex gap-4">
+                  <div className="flex items-center px-3 border border-gray-300 dark:border-gray-700 rounded-md">
+                    <input
+                      id="follow-link-check"
+                      type="checkbox"
+                      checked={currentFollowLink}
+                      onChange={(e) => setCurrentFollowLink(e.target.checked)}
+                      className="h-4 w-4 text-brand-500 focus:ring-brand-500 border-gray-300 rounded"
+                    />
+                    <label htmlFor="follow-link-check" className="ml-2 text-sm text-gray-700 dark:text-gray-300">
+                      Follow links
+                    </label>
+                  </div>
                   <button
-                    onClick={() => setStep('source')}
-                    className="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+                    onClick={handleAddWebsite}
+                    disabled={!currentWebsiteUrl.trim()}
+                    className="px-4 py-2 bg-brand-500 text-white rounded-md hover:bg-brand-600 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    Back
-                  </button>
-                  <button
-                    onClick={handleWebsiteSubmit}
-                    className="px-4 py-2 bg-brand-500 text-white rounded-md hover:bg-brand-600"
-                  >
-                    Continue
+                    Add
                   </button>
                 </div>
+                {websiteSources.length > 0 && (
+                  <div className="space-y-2 mt-4">
+                    {websiteSources.map((source, index) => (
+                      <div
+                        key={index}
+                        className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-900 rounded-lg"
+                      >
+                        <div>
+                          <p className="text-sm font-medium text-gray-900 dark:text-white">
+                            {source.url}
+                          </p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400">
+                            {source.followLink ? 'Follows links' : 'Single page'}
+                          </p>
+                        </div>
+                        <button
+                          onClick={() => handleRemoveWebsite(index)}
+                          className="text-red-500 hover:text-red-700"
+                        >
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Documents Section */}
+              <div className="mb-8 space-y-4">
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white">
+                  Documents
+                </h3>
+                <FileUploader
+                  files={uploadedFiles}
+                  onFilesChange={setUploadedFiles}
+                  progress={uploadProgress}
+                  acceptedTypes=".pdf,.docx,.txt"
+                />
+              </div>
+
+              {/* Summary */}
+              {(websiteSources.length > 0 || uploadedFiles.length > 0) && (
+                <div className="mb-6 p-4 bg-brand-50 dark:bg-brand-900/20 rounded-lg">
+                  <p className="text-sm text-brand-800 dark:text-brand-200">
+                    <strong>Added:</strong> {websiteSources.length} website(s), {uploadedFiles.length} document(s)
+                  </p>
+                </div>
+              )}
+
+              {/* Continue Button */}
+              <div className="flex justify-end">
+                <button
+                  onClick={handleContinueFromSources}
+                  className="px-6 py-2 bg-brand-500 text-white rounded-md hover:bg-brand-600"
+                >
+                  Continue to Settings
+                </button>
               </div>
             </motion.div>
           )}
 
-          {step === 'configure' && sourceType === 'documents' && (
-            <motion.div
-              key="documents-config"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              className="bg-white dark:bg-gray-800 rounded-lg shadow p-8"
-            >
-              <h2 className="text-2xl font-semibold mb-6 text-gray-900 dark:text-white">
-                Upload Documents
-              </h2>
-              <FileUploader
-                files={uploadedFiles}
-                onFilesChange={setUploadedFiles}
-                progress={uploadProgress}
-                acceptedTypes=".pdf,.docx,.txt"
-              />
-              <div className="flex gap-4 mt-6">
-                <button
-                  onClick={() => setStep('source')}
-                  className="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
-                >
-                  Back
-                </button>
-                <button
-                  onClick={handleDocumentsSubmit}
-                  disabled={uploadedFiles.length === 0}
-                  className="px-4 py-2 bg-brand-500 text-white rounded-md hover:bg-brand-600 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Continue
-                </button>
-              </div>
-            </motion.div>
-          )}
 
           {step === 'settings' && (
             <motion.div
@@ -494,7 +401,7 @@ export function OnboardWizard() {
                 </div>
                 <div className="flex gap-4">
                   <button
-                    onClick={() => setStep('configure')}
+                    onClick={() => setStep('sources')}
                     className="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
                   >
                     Back
@@ -530,28 +437,26 @@ export function OnboardWizard() {
                 </div>
                 <div>
                   <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                    Source Type:
+                    Knowledge Sources:
                   </span>
-                  <p className="text-gray-900 dark:text-white capitalize">{sourceType}</p>
+                  <div className="mt-1 space-y-1">
+                    {websiteSources.length > 0 && (
+                      <p className="text-gray-900 dark:text-white">
+                        {websiteSources.length} website(s): {websiteSources.map(s => s.url).join(', ')}
+                      </p>
+                    )}
+                    {uploadedFiles.length > 0 && (
+                      <p className="text-gray-900 dark:text-white">
+                        {uploadedFiles.length} document(s): {uploadedFiles.map(f => f.name).join(', ')}
+                      </p>
+                    )}
+                    {websiteSources.length === 0 && uploadedFiles.length === 0 && (
+                      <p className="text-gray-500 dark:text-gray-400 italic">
+                        No sources added (you can add them later)
+                      </p>
+                    )}
+                  </div>
                 </div>
-                {sourceType === 'website' && (
-                  <div>
-                    <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                      Website URL:
-                    </span>
-                    <p className="text-gray-900 dark:text-white">{websiteConfig.url}</p>
-                  </div>
-                )}
-                {sourceType === 'documents' && (
-                  <div>
-                    <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                      Documents:
-                    </span>
-                    <p className="text-gray-900 dark:text-white">
-                      {uploadedFiles.length} file(s)
-                    </p>
-                  </div>
-                )}
               </div>
               <div className="flex gap-4">
                 <button
