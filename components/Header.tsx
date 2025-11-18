@@ -49,6 +49,12 @@ export function Header() {
                   Agents
                 </Link>
                 <Link
+                  href="/stats"
+                  className="text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+                >
+                  Stats
+                </Link>
+                <Link
                   href="/admin/simple"
                   className="text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
                 >

@@ -183,3 +183,47 @@ export interface Agent {
   indexedPages?: number;
 }
 
+// User Statistics
+export interface UserStats {
+  totalApiCalls: number;
+  totalFiles: number;
+  totalChats: number;
+  totalSessions: number;
+  totalAgents: number;
+  recentlyApiCalls: number;
+  recentlyFiles: number;
+  recentlyChats: number;
+  recentlySessions: number;
+  period: string; // e.g., '30d', '7d', '1d'
+}
+
+// User Restrictions and Limits
+export interface UserRestrictions {
+  plan: 'free' | 'pro' | 'enterprise' | string;
+  limits: {
+    maxAgents: number;
+    maxApiCallsPerMonth: number;
+    maxFilesPerAgent: number;
+    maxChatsPerMonth: number;
+    maxStorageGB: number;
+    maxSessionsPerMonth: number;
+  };
+  features: {
+    canCreateAgents: boolean;
+    canUploadFiles: boolean;
+    canUseRAG: boolean;
+    canUseCustomDomains: boolean;
+    canUseWebhooks: boolean;
+    canExportData: boolean;
+    canAccessAPI: boolean;
+  };
+  usage: {
+    agentsUsed: number;
+    apiCallsUsed: number;
+    filesUsed: number;
+    chatsUsed: number;
+    sessionsUsed: number;
+    storageUsedGB: number;
+  };
+}
+

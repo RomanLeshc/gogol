@@ -869,6 +869,82 @@ export function httpResetPasswords(appId: string, usersIdList: Array<string>) {
   });
 }
 
+// ============ USER STATS & RESTRICTIONS ENDPOINTS ============
+
+/**
+ * Get user statistics and usage metrics
+ * Returns aggregated stats across all user's apps/agents
+ */
+export function httpGetUserStats() {
+  // Mock mode: return mock stats
+  if (isMockMode()) {
+    console.log('🔧 MOCK MODE: Returning mock user stats');
+    return Promise.resolve({
+      data: {
+        stats: {
+          totalApiCalls: 1250,
+          totalFiles: 45,
+          totalChats: 320,
+          totalSessions: 180,
+          totalAgents: 3,
+          recentlyApiCalls: 125,
+          recentlyFiles: 5,
+          recentlyChats: 32,
+          recentlySessions: 18,
+          period: '30d',
+        },
+      },
+    });
+  }
+
+  return http.get('/users/me/stats');
+}
+
+/**
+ * Get user restrictions and limits
+ * Returns plan limits, quotas, and feature restrictions
+ */
+export function httpGetUserRestrictions() {
+  // Mock mode: return mock restrictions
+  if (isMockMode()) {
+    console.log('🔧 MOCK MODE: Returning mock user restrictions');
+    return Promise.resolve({
+      data: {
+        restrictions: {
+          plan: 'free',
+          limits: {
+            maxAgents: 5,
+            maxApiCallsPerMonth: 10000,
+            maxFilesPerAgent: 100,
+            maxChatsPerMonth: 1000,
+            maxStorageGB: 1,
+            maxSessionsPerMonth: 500,
+          },
+          features: {
+            canCreateAgents: true,
+            canUploadFiles: true,
+            canUseRAG: true,
+            canUseCustomDomains: false,
+            canUseWebhooks: false,
+            canExportData: false,
+            canAccessAPI: false,
+          },
+          usage: {
+            agentsUsed: 3,
+            apiCallsUsed: 1250,
+            filesUsed: 45,
+            chatsUsed: 320,
+            sessionsUsed: 180,
+            storageUsedGB: 0.5,
+          },
+        },
+      },
+    });
+  }
+
+  return http.get('/users/me/restrictions');
+}
+
 // ============ ERROR HANDLING ============
 
 export interface ApiError {
