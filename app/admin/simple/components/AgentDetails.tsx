@@ -32,7 +32,7 @@ export function AgentDetails({
             <button
               onClick={onToggleStatus}
               disabled={togglingId === app._id}
-              className={`px-4 py-2 rounded-md text-sm font-medium flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed ${
+              className={`px-4 py-2 rounded-md text-sm font-medium flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 hover:scale-105 active:scale-95 ${
                 app.aiBot?.status === 'on'
                   ? 'bg-green-100 text-green-800 hover:bg-green-200 dark:bg-green-900 dark:text-green-200'
                   : 'bg-gray-100 text-gray-800 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-200'
@@ -49,7 +49,7 @@ export function AgentDetails({
             </button>
             <Link
               href={`/agents/${app._id}`}
-              className="px-4 py-2 bg-brand-500 text-white rounded-md hover:bg-brand-600 text-sm font-medium"
+              className="px-4 py-2 bg-brand-500 text-white rounded-md hover:bg-brand-600 text-sm font-medium transition-all duration-200 hover:scale-105 active:scale-95"
             >
               View Details
             </Link>
@@ -105,7 +105,7 @@ export function AgentDetails({
             <button
               onClick={onDelete}
               disabled={deletingId === app._id}
-              className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 transition-all duration-200 hover:scale-105 active:scale-95"
             >
               {deletingId === app._id ? (
                 <>

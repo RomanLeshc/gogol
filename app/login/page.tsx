@@ -170,7 +170,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-brand-500 hover:bg-brand-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-brand-500 hover:bg-brand-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 hover:scale-105 active:scale-95"
             >
               {loading ? 'Signing in...' : 'Sign in'}
             </button>
@@ -179,7 +179,7 @@ export default function LoginPage() {
           <div className="text-center">
             <Link
               href="/register"
-              className="text-sm text-brand-600 hover:text-brand-500"
+              className="text-sm text-brand-600 hover:text-brand-500 transition-all duration-200 hover:scale-105"
             >
               Don't have an account? Sign up
             </Link>

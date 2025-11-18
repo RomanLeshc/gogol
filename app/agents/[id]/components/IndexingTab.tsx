@@ -68,7 +68,7 @@ export function IndexingTab({
           <button
             onClick={onAddWebsite}
             disabled={!newUrl.trim() || indexingLoading}
-            className="px-4 py-2 bg-brand-500 text-white rounded-md hover:bg-brand-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+            className="px-4 py-2 bg-brand-500 text-white rounded-md hover:bg-brand-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 transition-all duration-200 hover:scale-105 active:scale-95"
           >
             {indexingLoading ? (
               <>
@@ -89,10 +89,11 @@ export function IndexingTab({
         {app.aiBot?.isRAG ? (
           app.aiBot.siteUrlsV2 && app.aiBot.siteUrlsV2.length > 0 ? (
             <div className="space-y-2">
-              {app.aiBot.siteUrlsV2.map((site) => (
+              {app.aiBot.siteUrlsV2.map((site, index) => (
                 <div
                   key={site.id}
-                  className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-900 rounded-lg"
+                  className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-900 rounded-lg animate-fade-in transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-800"
+                  style={{ animationDelay: `${index * 0.05}s` }}
                 >
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
@@ -104,7 +105,7 @@ export function IndexingTab({
                   </div>
                   <button
                     onClick={() => onDeleteUrl(site.url)}
-                    className="ml-4 text-red-500 hover:text-red-700"
+                    className="ml-4 text-red-500 hover:text-red-700 transition-all duration-200 hover:scale-110 active:scale-95"
                     title="Remove URL"
                   >
                     <svg

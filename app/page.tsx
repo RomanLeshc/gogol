@@ -92,18 +92,19 @@ export default function HomePage() {
             </p>
             <Link
               href="/onboard"
-              className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-brand-500 hover:bg-brand-600"
+              className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-brand-500 hover:bg-brand-600 transition-all duration-200 hover:scale-105 active:scale-95 animate-pulse-slow"
             >
               Create Your First Agent
             </Link>
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {apps.map((app) => (
+            {apps.map((app, index) => (
               <Link
                 key={app._id}
                 href={`/agents/${app._id}`}
-                className="block p-6 bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-lg transition-shadow"
+                className="block p-6 bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-lg transition-all duration-300 hover:scale-[1.02] hover:-translate-y-1 animate-fade-in"
+                style={{ animationDelay: `${index * 0.1}s` }}
               >
                 <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
                   {app.displayName}
@@ -113,7 +114,7 @@ export default function HomePage() {
                 </p>
                 <div className="flex items-center justify-between">
                   <span
-                    className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                    className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium transition-all duration-200 ${
                       app.aiBot?.status === 'on'
                         ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
                         : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
@@ -121,7 +122,7 @@ export default function HomePage() {
                   >
                     {app.aiBot?.status === 'on' ? 'Online' : 'Offline'}
                   </span>
-                  <span className="text-sm text-gray-500 dark:text-gray-400">
+                  <span className="text-sm text-gray-500 dark:text-gray-400 transition-transform duration-200 group-hover:translate-x-1">
                     View →
                   </span>
                 </div>
@@ -133,7 +134,7 @@ export default function HomePage() {
         <div className="mt-8">
           <Link
             href="/onboard"
-            className="inline-flex items-center px-4 py-2 border border-brand-500 text-base font-medium rounded-md text-brand-500 hover:bg-brand-50 dark:hover:bg-brand-900/20"
+            className="inline-flex items-center px-4 py-2 border border-brand-500 text-base font-medium rounded-md text-brand-500 hover:bg-brand-50 dark:hover:bg-brand-900/20 transition-all duration-200 hover:scale-105 active:scale-95"
           >
             + Create New Agent
           </Link>

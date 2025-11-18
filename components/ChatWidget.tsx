@@ -122,12 +122,12 @@ export function ChatWidget({ agentId, app, embedKey }: ChatWidgetProps) {
         {messages.map((message) => (
           <div
             key={message.id}
-            className={`flex ${
+            className={`flex animate-slide-in-up ${
               message.role === 'user' ? 'justify-end' : 'justify-start'
             }`}
           >
             <div
-              className={`max-w-[80%] rounded-lg px-4 py-2 ${
+              className={`max-w-[80%] rounded-lg px-4 py-2 transition-all duration-200 hover:scale-[1.02] ${
                 message.role === 'user'
                   ? 'bg-brand-500 text-white'
                   : 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white'
@@ -147,7 +147,7 @@ export function ChatWidget({ agentId, app, embedKey }: ChatWidgetProps) {
           </div>
         ))}
         {loading && (
-          <div className="flex justify-start">
+          <div className="flex justify-start animate-fade-in">
             <div className="bg-gray-100 dark:bg-gray-800 rounded-lg px-4 py-2">
               <div className="flex gap-1">
                 <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" />
@@ -181,7 +181,7 @@ export function ChatWidget({ agentId, app, embedKey }: ChatWidgetProps) {
           <button
             onClick={handleSend}
             disabled={!input.trim() || loading}
-            className="px-4 py-2 bg-brand-500 text-white rounded-md hover:bg-brand-600 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-4 py-2 bg-brand-500 text-white rounded-md hover:bg-brand-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 hover:scale-105 active:scale-95"
           >
             Send
           </button>

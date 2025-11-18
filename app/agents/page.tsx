@@ -152,7 +152,7 @@ export default function AgentsPage() {
           </div>
           <Link
             href="/onboard"
-            className="inline-flex items-center px-4 py-2 border border-transparent text-base font-medium rounded-md text-white bg-brand-500 hover:bg-brand-600"
+            className="inline-flex items-center px-4 py-2 border border-transparent text-base font-medium rounded-md text-white bg-brand-500 hover:bg-brand-600 transition-all duration-200 hover:scale-105 active:scale-95"
           >
             + Create New Agent
           </Link>
@@ -165,19 +165,20 @@ export default function AgentsPage() {
             </p>
             <Link
               href="/onboard"
-              className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-brand-500 hover:bg-brand-600"
+              className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-brand-500 hover:bg-brand-600 transition-all duration-200 hover:scale-105 active:scale-95 animate-pulse-slow"
             >
               Create Your First Agent
             </Link>
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {apps.map((app) => {
+            {apps.map((app, index) => {
               const status = getAgentStatus(app);
               return (
                 <div
                   key={app._id}
-                  className="bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-lg transition-shadow p-6"
+                  className="bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-lg transition-all duration-300 hover:scale-[1.02] hover:-translate-y-1 p-6 animate-fade-in"
+                  style={{ animationDelay: `${index * 0.1}s` }}
                 >
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex-1">
@@ -192,12 +193,12 @@ export default function AgentsPage() {
 
                   <div className="flex items-center justify-between mb-4">
                     <span
-                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusColors[status]}`}
+                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium transition-all duration-200 ${statusColors[status]}`}
                     >
                       {statusLabels[status]}
                     </span>
                     <span
-                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium transition-all duration-200 ${
                         app.aiBot?.status === 'on'
                           ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
                           : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
@@ -210,14 +211,14 @@ export default function AgentsPage() {
                   <div className="flex gap-2">
                     <Link
                       href={`/agents/${app._id}`}
-                      className="flex-1 text-center px-4 py-2 text-sm font-medium text-brand-600 hover:text-brand-700 border border-brand-500 rounded-md hover:bg-brand-50 dark:hover:bg-brand-900/20"
+                      className="flex-1 text-center px-4 py-2 text-sm font-medium text-brand-600 hover:text-brand-700 border border-brand-500 rounded-md hover:bg-brand-50 dark:hover:bg-brand-900/20 transition-all duration-200 hover:scale-105 active:scale-95"
                     >
                       View Details
                     </Link>
                     <button
                       onClick={() => handleDelete(app._id, app.displayName)}
                       disabled={deletingId === app._id}
-                      className="px-4 py-2 text-sm font-medium text-red-600 hover:text-red-700 border border-red-500 rounded-md hover:bg-red-50 dark:hover:bg-red-900/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                      className="px-4 py-2 text-sm font-medium text-red-600 hover:text-red-700 border border-red-500 rounded-md hover:bg-red-50 dark:hover:bg-red-900/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 transition-all duration-200 hover:scale-105 active:scale-95"
                     >
                       {deletingId === app._id ? (
                         <>

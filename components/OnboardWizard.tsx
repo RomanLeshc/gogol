@@ -232,7 +232,7 @@ export function OnboardWizard() {
                   <button
                     onClick={handleAddWebsite}
                     disabled={!currentWebsiteUrl.trim()}
-                    className="px-4 py-2 bg-brand-500 text-white rounded-md hover:bg-brand-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="px-4 py-2 bg-brand-500 text-white rounded-md hover:bg-brand-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 hover:scale-105 active:scale-95"
                   >
                     Add
                   </button>
@@ -254,7 +254,7 @@ export function OnboardWizard() {
                         </div>
                         <button
                           onClick={() => handleRemoveWebsite(index)}
-                          className="text-red-500 hover:text-red-700"
+                          className="text-red-500 hover:text-red-700 transition-all duration-200 hover:scale-110 active:scale-95"
                         >
                           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -292,7 +292,7 @@ export function OnboardWizard() {
               <div className="flex justify-end">
                 <button
                   onClick={handleContinueFromSources}
-                  className="px-6 py-2 bg-brand-500 text-white rounded-md hover:bg-brand-600"
+                  className="px-6 py-2 bg-brand-500 text-white rounded-md hover:bg-brand-600 transition-all duration-200 hover:scale-105 active:scale-95"
                 >
                   Continue to Settings
                 </button>
@@ -402,13 +402,13 @@ export function OnboardWizard() {
                 <div className="flex gap-4">
                   <button
                     onClick={() => setStep('sources')}
-                    className="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+                    className="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200 hover:scale-105 active:scale-95"
                   >
                     Back
                   </button>
                   <button
                     onClick={() => setStep('finalize')}
-                    className="px-4 py-2 bg-brand-500 text-white rounded-md hover:bg-brand-600"
+                    className="px-4 py-2 bg-brand-500 text-white rounded-md hover:bg-brand-600 transition-all duration-200 hover:scale-105 active:scale-95"
                   >
                     Continue
                   </button>
@@ -461,14 +461,14 @@ export function OnboardWizard() {
               <div className="flex gap-4">
                 <button
                   onClick={() => setStep('settings')}
-                  className="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+                  className="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200 hover:scale-105 active:scale-95"
                 >
                   Back
                 </button>
                 <button
                   onClick={handleFinalize}
                   disabled={loading}
-                  className="px-4 py-2 bg-brand-500 text-white rounded-md hover:bg-brand-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-4 py-2 bg-brand-500 text-white rounded-md hover:bg-brand-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 hover:scale-105 active:scale-95"
                 >
                   {loading ? 'Creating...' : 'Create Agent'}
                 </button>

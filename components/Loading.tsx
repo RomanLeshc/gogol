@@ -16,7 +16,7 @@ export function Loading({ fullScreen = true, size = 'md', className = '' }: Load
     : 'flex items-center justify-center';
 
   return (
-    <div className={`${containerClasses} ${className}`}>
+    <div className={`${containerClasses} ${className} animate-fade-in`}>
       <div className={`animate-spin rounded-full border-b-2 border-brand-500 ${sizeClasses[size]}`} />
     </div>
   );

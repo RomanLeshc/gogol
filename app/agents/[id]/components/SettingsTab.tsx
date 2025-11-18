@@ -33,7 +33,7 @@ export function SettingsTab({
           className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-white disabled:opacity-50 disabled:cursor-not-allowed"
         />
         {saving && (
-          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400 flex items-center gap-2">
+          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400 flex items-center gap-2 animate-fade-in">
             <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-brand-500"></div>
             Saving...
           </p>
@@ -104,7 +104,7 @@ export function SettingsTab({
         <button
           onClick={onDelete}
           disabled={deleting}
-          className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+          className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 transition-all duration-200 hover:scale-105 active:scale-95"
         >
           {deleting ? (
             <>
