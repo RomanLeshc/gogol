@@ -86,11 +86,14 @@ export default function AgentsPage() {
     loadData();
   }, [router, doSetUser, doSetApps]);
 
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
   const handleDelete = async (appId: string, appName: string) => {
     if (!confirm(`Are you sure you want to delete "${appName}"? This action cannot be undone.`)) {
       return;
     }
 
+    setDeletingId(appId);
     try {
       await deleteApp(appId);
       toast.success('Agent deleted successfully');
@@ -100,6 +103,8 @@ export default function AgentsPage() {
     } catch (error: any) {
       console.error('Delete error:', error);
       toast.error(error.response?.data?.message || 'Failed to delete agent');
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -211,9 +216,17 @@ export default function AgentsPage() {
                     </Link>
                     <button
                       onClick={() => handleDelete(app._id, app.displayName)}
-                      className="px-4 py-2 text-sm font-medium text-red-600 hover:text-red-700 border border-red-500 rounded-md hover:bg-red-50 dark:hover:bg-red-900/20"
+                      disabled={deletingId === app._id}
+                      className="px-4 py-2 text-sm font-medium text-red-600 hover:text-red-700 border border-red-500 rounded-md hover:bg-red-50 dark:hover:bg-red-900/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                     >
-                      Delete
+                      {deletingId === app._id ? (
+                        <>
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-600"></div>
+                          Deleting...
+                        </>
+                      ) : (
+                        'Delete'
+                      )}
                     </button>
                   </div>
                 </div>

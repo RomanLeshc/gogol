@@ -27,6 +27,8 @@ export default function SimpleAdminPage() {
   const { currentUser, apps, doSetUser, doSetApps } = useAppStore();
   const [loading, setLoading] = useState(true);
   const [selectedApp, setSelectedApp] = useState<ModelApp | null>(null);
+  const [togglingId, setTogglingId] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   useEffect(() => {
     const loadData = async () => {
@@ -85,6 +87,7 @@ export default function SimpleAdminPage() {
   }, [router, doSetUser, doSetApps]);
 
   const handleToggleStatus = async (app: ModelApp) => {
+    setTogglingId(app._id);
     try {
       const newStatus = app.aiBot?.status === 'on' ? 'off' : 'on';
       await httpUpdateApp(app._id, {
@@ -103,6 +106,8 @@ export default function SimpleAdminPage() {
     } catch (error: any) {
       console.error('Update error:', error);
       toast.error(error.response?.data?.message || 'Failed to update agent');
+    } finally {
+      setTogglingId(null);
     }
   };
 
@@ -111,6 +116,7 @@ export default function SimpleAdminPage() {
       return;
     }
 
+    setDeletingId(appId);
     try {
       await deleteApp(appId);
       toast.success('Agent deleted successfully');
@@ -122,6 +128,8 @@ export default function SimpleAdminPage() {
     } catch (error: any) {
       console.error('Delete error:', error);
       toast.error(error.response?.data?.message || 'Failed to delete agent');
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -238,13 +246,21 @@ export default function SimpleAdminPage() {
                     <div className="flex gap-2">
                       <button
                         onClick={() => handleToggleStatus(selectedApp)}
-                        className={`px-4 py-2 rounded-md text-sm font-medium ${
+                        disabled={togglingId === selectedApp._id}
+                        className={`px-4 py-2 rounded-md text-sm font-medium flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed ${
                           selectedApp.aiBot?.status === 'on'
                             ? 'bg-green-100 text-green-800 hover:bg-green-200 dark:bg-green-900 dark:text-green-200'
                             : 'bg-gray-100 text-gray-800 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-200'
                         }`}
                       >
-                        {selectedApp.aiBot?.status === 'on' ? 'Stop' : 'Start'}
+                        {togglingId === selectedApp._id ? (
+                          <>
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current"></div>
+                            Updating...
+                          </>
+                        ) : (
+                          selectedApp.aiBot?.status === 'on' ? 'Stop' : 'Start'
+                        )}
                       </button>
                       <Link
                         href={`/agents/${selectedApp._id}`}
@@ -303,9 +319,17 @@ export default function SimpleAdminPage() {
                     <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
                       <button
                         onClick={() => handleDelete(selectedApp._id, selectedApp.displayName)}
-                        className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 text-sm font-medium"
+                        disabled={deletingId === selectedApp._id}
+                        className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                       >
-                        Delete Agent
+                        {deletingId === selectedApp._id ? (
+                          <>
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                            Deleting...
+                          </>
+                        ) : (
+                          'Delete Agent'
+                        )}
                       </button>
                     </div>
                   </div>

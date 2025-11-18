@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAppStore } from '@/lib/store';
 import { httpGetApps, httpGetOneUser } from '@/lib/api';
@@ -12,11 +12,13 @@ import { Header } from '@/components/Header';
 export default function HomePage() {
   const router = useRouter();
   const { currentUser, apps, doSetUser, doSetApps } = useAppStore();
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     // Check if user is authenticated
     const checkAuth = async () => {
       try {
+        setLoading(true);
         const { data } = await httpGetOneUser();
         if (data && data.user) {
           doSetUser(data.user);
@@ -51,16 +53,21 @@ export default function HomePage() {
           // Still set empty apps array to prevent infinite loops
           doSetApps([]);
         }
+      } finally {
+        setLoading(false);
       }
     };
 
     checkAuth();
   }, [router, doSetUser, doSetApps]);
 
-  if (!currentUser) {
+  if (loading || !currentUser) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-500"></div>
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+        <Header />
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-500"></div>
+        </div>
       </div>
     );
   }

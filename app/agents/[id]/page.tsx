@@ -134,11 +134,14 @@ export default function AgentDetailPage() {
     }
   };
 
+  const [deleting, setDeleting] = useState(false);
+
   const handleDelete = async () => {
     if (!app || !confirm(`Are you sure you want to delete "${app.displayName}"?`)) {
       return;
     }
 
+    setDeleting(true);
     try {
       await deleteApp(app._id);
       toast.success('Agent deleted successfully');
@@ -146,6 +149,7 @@ export default function AgentDetailPage() {
     } catch (error: any) {
       console.error('Delete error:', error);
       toast.error(error.response?.data?.message || 'Failed to delete agent');
+      setDeleting(false);
     }
   };
 
@@ -502,9 +506,16 @@ initEthoraWidget({
                   <button
                     onClick={handleUploadDocuments}
                     disabled={uploadingDocuments}
-                    className="mt-4 px-4 py-2 bg-brand-500 text-white rounded-md hover:bg-brand-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="mt-4 px-4 py-2 bg-brand-500 text-white rounded-md hover:bg-brand-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                   >
-                    {uploadingDocuments ? 'Uploading...' : 'Upload Documents'}
+                    {uploadingDocuments ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                        Uploading...
+                      </>
+                    ) : (
+                      'Upload Documents'
+                    )}
                   </button>
                 )}
               </div>
@@ -608,9 +619,16 @@ initEthoraWidget({
                   <button
                     onClick={handleAddWebsite}
                     disabled={!newUrl.trim() || indexingLoading}
-                    className="px-4 py-2 bg-brand-500 text-white rounded-md hover:bg-brand-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="px-4 py-2 bg-brand-500 text-white rounded-md hover:bg-brand-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                   >
-                    {indexingLoading ? 'Indexing...' : 'Start Indexing'}
+                    {indexingLoading ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                        Indexing...
+                      </>
+                    ) : (
+                      'Start Indexing'
+                    )}
                   </button>
                 </div>
               </div>
@@ -690,8 +708,15 @@ initEthoraWidget({
                   onChange={(e) =>
                     handleUpdateSettings({ displayName: e.target.value })
                   }
-                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+                  disabled={saving}
+                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-white disabled:opacity-50 disabled:cursor-not-allowed"
                 />
+                {saving && (
+                  <p className="mt-1 text-sm text-gray-500 dark:text-gray-400 flex items-center gap-2">
+                    <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-brand-500"></div>
+                    Saving...
+                  </p>
+                )}
               </div>
 
               <div>
@@ -704,7 +729,8 @@ initEthoraWidget({
                   onChange={(e) =>
                     handleUpdateSettings({ appTagline: e.target.value })
                   }
-                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+                  disabled={saving}
+                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-white disabled:opacity-50 disabled:cursor-not-allowed"
                 />
               </div>
 
@@ -722,7 +748,8 @@ initEthoraWidget({
                       },
                     })
                   }
-                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+                  disabled={saving}
+                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-white disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <option value="on">On</option>
                   <option value="off">Off</option>
@@ -743,7 +770,8 @@ initEthoraWidget({
                       },
                     })
                   }
-                  className="h-4 w-4 text-brand-500 focus:ring-brand-500 border-gray-300 rounded"
+                  disabled={saving}
+                  className="h-4 w-4 text-brand-500 focus:ring-brand-500 border-gray-300 rounded disabled:opacity-50 disabled:cursor-not-allowed"
                 />
                 <label
                   htmlFor="rag-enabled"
@@ -756,9 +784,17 @@ initEthoraWidget({
               <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
                 <button
                   onClick={handleDelete}
-                  className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+                  disabled={deleting}
+                  className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                 >
-                  Delete Agent
+                  {deleting ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                      Deleting...
+                    </>
+                  ) : (
+                    'Delete Agent'
+                  )}
                 </button>
               </div>
             </div>
