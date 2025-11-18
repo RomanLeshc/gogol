@@ -246,17 +246,17 @@ export const refreshToken = async () => {
 // Enable mock mode by setting NEXT_PUBLIC_MOCK_AUTH=true or localStorage.setItem('mockAuth', 'true')
 
 function isMockMode(): boolean {
-  // Mock mode is enabled by default for testing
-  // Disable by setting NEXT_PUBLIC_MOCK_AUTH=false or localStorage.setItem('mockAuth', 'false')
+  // Mock mode is disabled by default
+  // Enable by setting NEXT_PUBLIC_MOCK_AUTH=true or localStorage.setItem('mockAuth', 'true')
   if (typeof window === 'undefined') {
-    return process.env.NEXT_PUBLIC_MOCK_AUTH !== 'false';
+    return process.env.NEXT_PUBLIC_MOCK_AUTH === 'true';
   }
   const localStorageValue = localStorage.getItem('mockAuth');
-  if (localStorageValue === 'false') {
-    return false;
+  if (localStorageValue === 'true') {
+    return true;
   }
-  // Default to true (mock mode enabled) unless explicitly disabled
-  return process.env.NEXT_PUBLIC_MOCK_AUTH !== 'false';
+  // Default to false (mock mode disabled) unless explicitly enabled
+  return process.env.NEXT_PUBLIC_MOCK_AUTH === 'true';
 }
 
 function generateMockUser(email: string) {
