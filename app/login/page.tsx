@@ -122,20 +122,9 @@ export default function LoginPage() {
     );
   }
 
-  // Check if mock mode is enabled
-  const isMockModeEnabled = typeof window !== 'undefined' && 
-    (process.env.NEXT_PUBLIC_MOCK_AUTH !== 'false' && localStorage.getItem('mockAuth') !== 'false');
-
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-950 px-4">
       <div className="max-w-md w-full space-y-8">
-        {isMockModeEnabled && (
-          <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-md p-3">
-            <p className="text-sm text-yellow-800 dark:text-yellow-200 text-center">
-              🔧 <strong>Mock Mode Enabled:</strong> You can sign in with any email and password
-            </p>
-          </div>
-        )}
         <div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900 dark:text-white">
             Sign in to your account

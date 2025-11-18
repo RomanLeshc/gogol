@@ -10,7 +10,6 @@ export async function initializeAppConfig(domainName?: string) {
   try {
     console.log('🔍 Fetching app config with domainName:', domainName || 'none');
     
-    // Use httpGetConfig which handles mock mode
     const response = await httpGetConfig(domainName);
     console.log('📦 Config response data keys:', Object.keys(response.data || {}));
     
