@@ -95,7 +95,7 @@ export function OnboardWizard() {
       const { data: appData } = await httpCreateNewApp(agentSettings.name);
       const appId = appData.app._id;
 
-      // Step 2: Configure source based on type
+      // Step 2: Configure source based on type (optional - can be skipped)
       if (sourceType === 'website') {
         // Add website crawl source
         await setSourcesSiteCrawl(
@@ -120,14 +120,15 @@ export function OnboardWizard() {
         await Promise.all(uploadPromises);
         toast.success('Documents uploaded successfully');
       }
+      // If sourceType is null, user skipped adding sources - that's fine!
 
-      // Step 3: Update app with agent settings
+      // Step 3: Update app with agent settings if provided
       // Note: The API might need additional endpoints for updating agent-specific settings
       // For now, we'll use the standard app update endpoint
       // await httpUpdateApp(appId, {
       //   aiBot: {
       //     prompt: agentSettings.personaPrompt,
-      //     isRAG: true,
+      //     isRAG: sourceType !== null, // Enable RAG if sources were added
       //     status: 'on',
       //   },
       // });
@@ -135,7 +136,7 @@ export function OnboardWizard() {
       doAddApp(appData.app);
       toast.success('Agent created successfully!');
       
-      // Redirect to agent detail page
+      // Redirect to agent detail page where they can add sources later
       router.push(`/agents/${appId}`);
     } catch (error: any) {
       console.error('Agent creation error:', error);
@@ -208,31 +209,44 @@ export function OnboardWizard() {
               <h2 className="text-2xl font-semibold mb-6 text-gray-900 dark:text-white">
                 Choose Knowledge Source
               </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <button
-                  onClick={() => handleSourceSelect('website')}
-                  className="p-6 border-2 border-gray-300 dark:border-gray-700 rounded-lg hover:border-brand-500 dark:hover:border-brand-500 transition-colors text-left"
-                >
-                  <div className="text-3xl mb-3">🌐</div>
-                  <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">
-                    Website URL
-                  </h3>
-                  <p className="text-gray-600 dark:text-gray-400">
-                    Index content from a website by providing a URL
-                  </p>
-                </button>
-                <button
-                  onClick={() => handleSourceSelect('documents')}
-                  className="p-6 border-2 border-gray-300 dark:border-gray-700 rounded-lg hover:border-brand-500 dark:hover:border-brand-500 transition-colors text-left"
-                >
-                  <div className="text-3xl mb-3">📄</div>
-                  <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">
-                    Upload Documents
-                  </h3>
-                  <p className="text-gray-600 dark:text-gray-400">
-                    Upload PDF, DOCX, or TXT files
-                  </p>
-                </button>
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <button
+                    onClick={() => handleSourceSelect('website')}
+                    className="p-6 border-2 border-gray-300 dark:border-gray-700 rounded-lg hover:border-brand-500 dark:hover:border-brand-500 transition-colors text-left"
+                  >
+                    <div className="text-3xl mb-3">🌐</div>
+                    <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">
+                      Website URL
+                    </h3>
+                    <p className="text-gray-600 dark:text-gray-400">
+                      Index content from a website by providing a URL
+                    </p>
+                  </button>
+                  <button
+                    onClick={() => handleSourceSelect('documents')}
+                    className="p-6 border-2 border-gray-300 dark:border-gray-700 rounded-lg hover:border-brand-500 dark:hover:border-brand-500 transition-colors text-left"
+                  >
+                    <div className="text-3xl mb-3">📄</div>
+                    <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">
+                      Upload Documents
+                    </h3>
+                    <p className="text-gray-600 dark:text-gray-400">
+                      Upload PDF, DOCX, or TXT files
+                    </p>
+                  </button>
+                </div>
+                <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+                  <button
+                    onClick={() => {
+                      setSourceType(null);
+                      setStep('settings');
+                    }}
+                    className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+                  >
+                    Skip for now - I'll add sources later
+                  </button>
+                </div>
               </div>
             </motion.div>
           )}
