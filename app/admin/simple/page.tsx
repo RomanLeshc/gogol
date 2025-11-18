@@ -12,7 +12,7 @@ import { AgentDetails } from './components/AgentDetails';
 import { useAdminData } from './hooks/useAdminData';
 
 export default function SimpleAdminPage() {
-  const { apps, doSetApps } = useAppStore();
+  const { apps, doSetApps, currentUser } = useAppStore();
   const { loading, selectedApp, setSelectedApp } = useAdminData();
   const [togglingId, setTogglingId] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -84,7 +84,6 @@ export default function SimpleAdminPage() {
     );
   }
 
-  const { currentUser } = useAppStore();
   if (!currentUser) {
     return null;
   }
