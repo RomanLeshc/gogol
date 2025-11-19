@@ -1,3 +1,7 @@
+'use client';
+
+import { useState, useEffect, useMemo } from 'react';
+import { debounce } from 'lodash';
 import { ModelApp } from '@/lib/types';
 
 interface SettingsTabProps {
@@ -15,6 +19,25 @@ export function SettingsTab({
   onUpdate,
   onDelete,
 }: SettingsTabProps) {
+  const [displayName, setDisplayName] = useState(app.displayName);
+  const [appTagline, setAppTagline] = useState(app.appTagline || '');
+
+  useEffect(() => {
+    setDisplayName(app.displayName);
+    setAppTagline(app.appTagline || '');
+  }, [app.displayName, app.appTagline]);
+
+  const debouncedUpdate = useMemo(
+    () => debounce((updates: Partial<ModelApp>) => onUpdate(updates), 500),
+    [onUpdate]
+  );
+
+  useEffect(() => {
+    return () => {
+      debouncedUpdate.cancel();
+    };
+  }, [debouncedUpdate]);
+
   return (
     <div className="space-y-6">
       <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
@@ -27,17 +50,15 @@ export function SettingsTab({
         </label>
         <input
           type="text"
-          value={app.displayName}
-          onChange={(e) => onUpdate({ displayName: e.target.value })}
+          value={displayName}
+          onChange={(e) => {
+            const value = e.target.value;
+            setDisplayName(value);
+            debouncedUpdate({ displayName: value });
+          }}
           disabled={saving}
           className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-white disabled:opacity-50 disabled:cursor-not-allowed"
         />
-        {saving && (
-          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400 flex items-center gap-2 animate-fade-in">
-            <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-brand-500"></div>
-            Saving...
-          </p>
-        )}
       </div>
 
       <div>
@@ -46,8 +67,12 @@ export function SettingsTab({
         </label>
         <input
           type="text"
-          value={app.appTagline || ''}
-          onChange={(e) => onUpdate({ appTagline: e.target.value })}
+          value={appTagline}
+          onChange={(e) => {
+            const value = e.target.value;
+            setAppTagline(value);
+            debouncedUpdate({ appTagline: value });
+          }}
           disabled={saving}
           className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-white disabled:opacity-50 disabled:cursor-not-allowed"
         />
@@ -60,12 +85,7 @@ export function SettingsTab({
         <select
           value={app.aiBot?.status || 'off'}
           onChange={(e) =>
-            onUpdate({
-              aiBot: {
-                ...app.aiBot!,
-                status: e.target.value as 'on' | 'off',
-              },
-            })
+            onUpdate({ botStatus: e.target.value as 'on' | 'off' })
           }
           disabled={saving}
           className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-white disabled:opacity-50 disabled:cursor-not-allowed"
@@ -98,6 +118,15 @@ export function SettingsTab({
         >
           Enable RAG (Retrieval-Augmented Generation)
         </label>
+      </div>
+
+      <div className="flex items-center">
+        {saving && (
+          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400 flex items-center gap-2 animate-fade-in">
+            <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-brand-500"></div>
+              Updating...
+          </p>
+        )}
       </div>
 
       <div className="pt-4 border-t border-gray-200 dark:border-gray-700">

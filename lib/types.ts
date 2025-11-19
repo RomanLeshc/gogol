@@ -150,6 +150,8 @@ export interface ModelApp {
   appSecret: string;
   allowUsersToCreateRooms: boolean;
   aiBot: ModelAIbot;
+
+  botStatus?: 'on' | 'off';
 }
 
 export interface ModelAiWidgetValues {

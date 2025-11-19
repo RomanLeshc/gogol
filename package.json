@@ -12,10 +12,12 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@types/lodash": "^4.17.20",
     "axios": "^1.7.5",
     "clsx": "^2.1.1",
     "firebase": "^12.6.0",
     "framer-motion": "^11.0.0",
+    "lodash": "^4.17.21",
     "next": "^14.2.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
