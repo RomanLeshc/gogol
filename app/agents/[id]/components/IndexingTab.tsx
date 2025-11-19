@@ -1,4 +1,5 @@
 import { ModelApp } from '@/lib/types';
+import { UrlInput } from '@/components/UrlInput';
 
 interface IndexingTabProps {
   app: ModelApp;
@@ -41,11 +42,10 @@ export function IndexingTab({
             >
               Website URL
             </label>
-            <input
+            <UrlInput
               id="website-url"
-              type="url"
               value={newUrl}
-              onChange={(e) => onUrlChange(e.target.value)}
+              onChange={onUrlChange}
               className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-brand-500 focus:border-brand-500"
               placeholder="https://example.com"
             />

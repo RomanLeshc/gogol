@@ -13,6 +13,7 @@ import {
 import { useAppStore } from '@/lib/store';
 import { toast } from 'react-toastify';
 import { FileUploader } from './FileUploader';
+import { UrlInput } from './UrlInput';
 
 type Step = 'sources' | 'add-website' | 'add-documents' | 'settings' | 'finalize';
 
@@ -207,25 +208,12 @@ export function OnboardWizard() {
                   Website Indexing
                 </h3>
                 <div className="flex gap-2">
-                  <input
-                    type="url"
+                  <UrlInput
                     value={currentWebsiteUrl}
-                    onChange={(e) => setCurrentWebsiteUrl(e.target.value)}
-                    className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-brand-500 focus:border-brand-500"
+                    onChange={setCurrentWebsiteUrl}
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-brand-500 focus:border-brand-500"
                     placeholder="https://example.com"
                   />
-                  <div className="flex items-center px-3 border border-gray-300 dark:border-gray-700 rounded-md">
-                    <input
-                      id="follow-link-check"
-                      type="checkbox"
-                      checked={currentFollowLink}
-                      onChange={(e) => setCurrentFollowLink(e.target.checked)}
-                      className="h-4 w-4 text-brand-500 focus:ring-brand-500 border-gray-300 rounded"
-                    />
-                    <label htmlFor="follow-link-check" className="ml-2 text-sm text-gray-700 dark:text-gray-300">
-                      Follow links
-                    </label>
-                  </div>
                   <button
                     onClick={handleAddWebsite}
                     disabled={!currentWebsiteUrl.trim()}
@@ -234,6 +222,20 @@ export function OnboardWizard() {
                     Add
                   </button>
                 </div>
+
+                <div className="flex items-center justify-start px-3">
+                  <input
+                    id="follow-link-check"
+                    type="checkbox"
+                    checked={currentFollowLink}
+                    onChange={(e) => setCurrentFollowLink(e.target.checked)}
+                    className="h-4 w-4 text-brand-500 focus:ring-brand-500 border-gray-300 rounded"
+                  />
+                  <label htmlFor="follow-link-check" className="ml-2 text-sm text-gray-700 dark:text-gray-300">
+                    Follow links
+                  </label>
+                </div>
+
                 {websiteSources.length > 0 && (
                   <div className="space-y-2 mt-4">
                     {websiteSources.map((source, index) => (
