@@ -469,6 +469,27 @@ export function deleteSourcesSiteCrawlV2(appId: string, urls: string[]) {
   });
 }
 
+export function setSourcesSiteFiles(appId: string, files: File[]) {
+  const formData = new FormData();
+  files.forEach((file) => {
+    formData.append('files', file);
+  });
+  
+  return http.post(`/sources/docs/${appId}`, formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+}
+
+export function setSourcesSiteFilesDelete(appId: string, fileId: string) {  
+  return http.delete(`/sources/docs/${appId}/${fileId}`, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+}
+
 // ============ DOCUMENTS ENDPOINTS ============
 
 export function getDocuments(walletAddress: string) {

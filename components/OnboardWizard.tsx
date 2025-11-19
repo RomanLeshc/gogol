@@ -8,6 +8,7 @@ import {
   setSourcesSiteCrawl,
   httpPostFile,
   postDocument,
+  setSourcesSiteFiles,
 } from '@/lib/api';
 import { useAppStore } from '@/lib/store';
 import { toast } from 'react-toastify';
@@ -102,19 +103,15 @@ export function OnboardWizard() {
 
       // Step 3: Upload documents (if any)
       if (uploadedFiles.length > 0) {
-        const uploadPromises = uploadedFiles.map(async (file) => {
           try {
-            setUploadProgress((prev) => ({ ...prev, [file.name]: 0 }));
-            await postDocument(file.name, file);
-            setUploadProgress((prev) => ({ ...prev, [file.name]: 100 }));
+            await setSourcesSiteFiles(appId, uploadedFiles);
+
+            toast.success(`${uploadedFiles.length} document(s) uploaded successfully`);
           } catch (error) {
-            console.error(`Failed to upload ${file.name}:`, error);
+            console.error(`Failed to upload files:`, error);
             throw error;
           }
-        });
 
-        await Promise.all(uploadPromises);
-        toast.success(`${uploadedFiles.length} document(s) uploaded successfully`);
       }
       
       // If no sources added, that's fine - user can add them later!

@@ -6,6 +6,8 @@ import {
   setSourcesSiteCrawl,
   postDocument,
   deleteSourcesSiteCrawlV2,
+  setSourcesSiteFiles,
+  setSourcesSiteFilesDelete,
 } from '@/lib/api';
 import { useAppStore } from '@/lib/store';
 import { ModelApp } from '@/lib/types';
@@ -109,19 +111,39 @@ export function useAgentHandlers({ app, loadAgent, setApp }: UseAgentHandlersPro
           aiBot: { ...app.aiBot!, isRAG: true, status: app.aiBot?.status || 'on' },
         });
       }
-      const uploadPromises = uploadedFiles.map(async (file) => {
-        setUploadProgress((prev) => ({ ...prev, [file.name]: 0 }));
-        await postDocument(file.name, file);
-        setUploadProgress((prev) => ({ ...prev, [file.name]: 100 }));
-      });
-      await Promise.all(uploadPromises);
+
+      const { data } = await setSourcesSiteFiles(app._id, uploadedFiles);
+      
       toast.success('Documents uploaded successfully');
       await loadAgent();
+
+      return data.result;
     } catch (error: any) {
       console.error('Upload documents error:', error);
       toast.error(error.response?.data?.message || 'Failed to upload documents');
     } finally {
       setUploadingDocuments(false);
+    }
+  };
+
+
+  const handleDeleteDocument = async (fileId: string) => {
+    if (!app || !fileId) {
+      toast.error('Agent or file ID not found');
+      return;
+    }
+
+    setDeleting(true);
+    try {
+      await setSourcesSiteFilesDelete(app._id, fileId);
+
+      toast.success('Document deleted successfully');
+      await loadAgent();
+    } catch (error: any) {
+      console.error('Delete document error:', error);
+      toast.error(error.response?.data?.message || 'Failed to delete document');
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -135,6 +157,7 @@ export function useAgentHandlers({ app, loadAgent, setApp }: UseAgentHandlersPro
     handleAddWebsite,
     handleDeleteUrl,
     handleUploadDocuments,
+    handleDeleteDocument,
   };
 }
 

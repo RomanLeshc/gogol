@@ -113,7 +113,7 @@ export default function AgentDetailPage() {
               uploadingDocuments={handlers.uploadingDocuments}
               onFilesChange={setUploadedFiles}
               onUpload={handleUploadDocuments}
-              onDeleteUrl={handlers.handleDeleteUrl}
+              onDeleteFile={handlers.handleDeleteDocument}
             />
           )}
           {activeTab === 'indexing' && (
