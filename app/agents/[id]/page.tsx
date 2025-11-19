@@ -55,9 +55,13 @@ export default function AgentDetailPage() {
   };
 
   const handleUploadDocuments = async () => {
-    await handlers.handleUploadDocuments(uploadedFiles, setUploadProgress);
-    setUploadedFiles([]);
-    setUploadProgress({});
+    try {
+      await handlers.handleUploadDocuments(uploadedFiles, setUploadProgress);
+      setUploadedFiles([]);
+      setUploadProgress({});
+    } catch (error) {
+      console.error('Upload documents error in page:', error);
+    }
   };
 
   if (loading) {

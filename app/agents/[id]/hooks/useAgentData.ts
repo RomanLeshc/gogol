@@ -10,9 +10,11 @@ export function useAgentData(agentId: string) {
   const [app, setApp] = useState<ModelApp | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const loadAgent = async () => {
+  const loadAgent = async (showLoading = true) => {
     try {
-      setLoading(true);
+      if (showLoading) {
+        setLoading(true);
+      }
       const { data: userData } = await httpGetOneUser();
       doSetUser({
         _id: userData.user._id,
@@ -50,7 +52,9 @@ export function useAgentData(agentId: string) {
         router.push('/agents');
       }
     } finally {
-      setLoading(false);
+      if (showLoading) {
+        setLoading(false);
+      }
     }
   };
 

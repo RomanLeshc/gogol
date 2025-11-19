@@ -15,7 +15,7 @@ import { toast } from 'react-toastify';
 
 interface UseAgentHandlersProps {
   app: ModelApp | null;
-  loadAgent: () => Promise<void>;
+  loadAgent: (showLoading?: boolean) => Promise<void>;
   setApp: (app: ModelApp) => void;
 }
 
@@ -73,7 +73,7 @@ export function useAgentHandlers({ app, loadAgent, setApp }: UseAgentHandlersPro
       }
       await setSourcesSiteCrawl(app._id, newUrl.trim(), followLink);
       toast.success('Website indexing started');
-      await loadAgent();
+      await loadAgent(false);
     } catch (error: any) {
       console.error('Add website error:', error);
       toast.error(error.response?.data?.message || 'Failed to add website');
@@ -89,7 +89,7 @@ export function useAgentHandlers({ app, loadAgent, setApp }: UseAgentHandlersPro
     try {
       await deleteSourcesSiteCrawlV2(app._id, [url]);
       toast.success('URL removed successfully');
-      await loadAgent();
+      await loadAgent(false);
     } catch (error: any) {
       console.error('Delete URL error:', error);
       toast.error(error.response?.data?.message || 'Failed to remove URL');
@@ -115,7 +115,7 @@ export function useAgentHandlers({ app, loadAgent, setApp }: UseAgentHandlersPro
       const { data } = await setSourcesSiteFiles(app._id, uploadedFiles);
       
       toast.success('Documents uploaded successfully');
-      await loadAgent();
+      await loadAgent(false);
 
       return data.result;
     } catch (error: any) {
@@ -138,7 +138,7 @@ export function useAgentHandlers({ app, loadAgent, setApp }: UseAgentHandlersPro
       await setSourcesSiteFilesDelete(app._id, fileId);
 
       toast.success('Document deleted successfully');
-      await loadAgent();
+      await loadAgent(false);
     } catch (error: any) {
       console.error('Delete document error:', error);
       toast.error(error.response?.data?.message || 'Failed to delete document');
