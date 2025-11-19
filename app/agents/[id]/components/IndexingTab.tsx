@@ -1,3 +1,5 @@
+'use client';
+
 import { ModelApp } from '@/lib/types';
 import { UrlInput } from '@/components/UrlInput';
 
