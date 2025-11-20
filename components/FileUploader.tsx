@@ -5,9 +5,9 @@ import { motion } from 'framer-motion';
 import { Files } from '@/lib/types';
 
 interface FileUploaderProps {
-  files: Files[];
+  files: Files[] | File[];
   onFilesChange: (files: File[]) => void;
-  onDeleteFile: (fileId: string) => void;
+  onDeleteFile?: (fileId: string) => void;
   onRemoveFileFromUpload?: (fileName: string) => void;
   progress?: Record<string, number>;
   acceptedTypes?: string;
@@ -30,7 +30,7 @@ export function FileUploader({
 
   useEffect(() => {
     if (!isInitializedRef.current && files) {
-      setInitialFiles(files || []);
+      setInitialFiles(files as Files[] || []);
       isInitializedRef.current = true;
     }
   }, [files]);
@@ -125,7 +125,7 @@ export function FileUploader({
     }
     
     try {
-      onDeleteFile(fileId);
+      onDeleteFile?.(fileId);
       
       setUploadedFiles((prev) => prev.filter((f) => f.id !== fileId));
       setInitialFiles((prev) => prev.filter((f) => f.id !== fileId));
@@ -172,8 +172,8 @@ export function FileUploader({
     <div
       key={file.id}
       className={`relative w-[130px] h-[130px] border-2 rounded-lg p-2 flex flex-col items-center justify-center cursor-pointer transition-all duration-200
-        ${file.file ? 'border-yellow-400 bg-yellow-100' : 'border-gray-300 bg-gray-50'}
-        hover:border-blue-500 hover:bg-blue-100`}
+        ${file.file ? 'border-yellow-900 bg-yellow-500' : 'border-gray-300 bg-gray-500'}
+        hover:border-black hover:bg-gray-900`}
     >
       <button
         onClick={(e) => {
@@ -206,8 +206,8 @@ export function FileUploader({
     onDrop={handleDrop}
     className={`border-2 rounded-lg flex flex-col items-center justify-center cursor-pointer transition-all duration-200
       ${allFiles.length === 0 ? 'w-full h-40' : 'w-[130px] h-[130px]'}
-      ${isDragging ? 'border-blue-500 bg-blue-100' : 'border-gray-300 bg-white'}
-      hover:border-blue-500 hover:bg-blue-100`}
+      ${isDragging ? 'border-black bg-gray-900' : 'border-gray-300 bg-gray-700'}
+      hover:border-black hover:bg-gray-900`}
   >
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -216,7 +216,7 @@ export function FileUploader({
       viewBox="0 0 24 24"
       stroke="currentColor"
     >
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1M12 12v9m0 0l-3-3m3 3l3-3m0-5a4 4 0 10-8 0 4 4 0 008 0z" />
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
     </svg>
     <div className="text-xs text-gray-500 text-center px-1">
       Drag & Drop or click to select files
