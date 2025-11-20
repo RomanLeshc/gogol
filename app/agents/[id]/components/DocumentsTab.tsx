@@ -9,6 +9,7 @@ interface DocumentsTabProps {
   onFilesChange: (files: File[]) => void;
   onUpload: () => Promise<void>;
   onDeleteFile: (url: string) => void;
+  onRemoveFileFromUpload?: (fileName: string) => void;
 }
 
 export function DocumentsTab({
@@ -19,6 +20,7 @@ export function DocumentsTab({
   onFilesChange,
   onUpload,
   onDeleteFile,
+  onRemoveFileFromUpload,
 }: DocumentsTabProps) {
   return (
     <div className="space-y-6">
@@ -36,6 +38,7 @@ export function DocumentsTab({
           files={app.aiBot?.files || []}
           onDeleteFile={onDeleteFile}
           onFilesChange={onFilesChange}
+          onRemoveFileFromUpload={onRemoveFileFromUpload}
           progress={uploadProgress}
           acceptedTypes=".pdf,.docx,.txt"
         />

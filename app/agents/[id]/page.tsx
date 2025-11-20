@@ -64,6 +64,12 @@ export default function AgentDetailPage() {
     }
   };
 
+  const handleRemoveFileFromUpload = (fileName: string) => {
+    setUploadedFiles((prev) => 
+      prev.filter((file) => file.name !== fileName)
+    );
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
@@ -118,6 +124,7 @@ export default function AgentDetailPage() {
               onFilesChange={setUploadedFiles}
               onUpload={handleUploadDocuments}
               onDeleteFile={handlers.handleDeleteDocument}
+              onRemoveFileFromUpload={handleRemoveFileFromUpload}
             />
           )}
           {activeTab === 'indexing' && (

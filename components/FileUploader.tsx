@@ -8,6 +8,7 @@ interface FileUploaderProps {
   files: Files[];
   onFilesChange: (files: File[]) => void;
   onDeleteFile: (fileId: string) => void;
+  onRemoveFileFromUpload?: (fileName: string) => void;
   progress?: Record<string, number>;
   acceptedTypes?: string;
 }
@@ -16,6 +17,7 @@ export function FileUploader({
   files,
   onFilesChange,
   onDeleteFile,
+  onRemoveFileFromUpload,
   progress = {},
   acceptedTypes = '.pdf,.docx,.txt',
 }: FileUploaderProps) {
@@ -33,8 +35,6 @@ export function FileUploader({
     }
   }, [files]);
 
-  console.log('initialFiles', initialFiles);
-
   const allFiles: Files[] = useMemo(() => {
     return [...initialFiles, ...uploadedFiles, ...localFiles];
   }, [initialFiles, uploadedFiles, localFiles]);
@@ -50,11 +50,6 @@ export function FileUploader({
     try {
       const fileObjects = filesToUpload.map((f) => f.file!);
       onFilesChange(fileObjects);
-      
-      const uploadedIds = filesToUpload.map(f => f.id);
-      setLocalFiles((prev) => prev.filter((f) => !uploadedIds.includes(f.id)));
-      
-      // setUploadedFiles((prev) => [...prev, ...data.result]);
     } catch (error) {
       console.error('Error setting files', error);
     }
@@ -73,6 +68,9 @@ export function FileUploader({
     }));
 
     setLocalFiles((prev) => [...prev, ...newFiles]);
+    
+    const fileObjects = newFiles.map((f) => f.file!);
+    onFilesChange(fileObjects);
   };
 
   const handleIconButtonClick = () => {
@@ -116,7 +114,13 @@ export function FileUploader({
     const isLocalFile = localFiles.some((f) => f.id === fileId && f.file);
     
     if (isLocalFile) {
+      const fileToRemove = localFiles.find((f) => f.id === fileId);
       setLocalFiles((prev) => prev.filter((f) => f.id !== fileId));
+      
+      if (fileToRemove && onRemoveFileFromUpload) {
+        const fileName = fileToRemove.url.split('/').pop() || fileToRemove.url;
+        onRemoveFileFromUpload(fileName);
+      }
       return;
     }
     
@@ -229,14 +233,6 @@ export function FileUploader({
         className="hidden"
       />
 
-      {localFiles.length > 0 && (
-        <button 
-          onClick={handleSetFiles}
-          className="mt-3 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-        >
-          Upload files
-        </button>
-      )}
 </div>
   );
 }
