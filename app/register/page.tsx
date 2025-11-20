@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { httpRegisterWithEmailV2, httpTokens } from '@/lib/api';
+import { httpRegisterWithEmailV2, httpLoginWithEmail, httpTokens } from '@/lib/api';
 import { useAppStore } from '@/lib/store';
 import { toast } from 'react-toastify';
 import Link from 'next/link';
@@ -55,8 +55,8 @@ export default function RegisterPage() {
       const utm = getUtmParams();
       const signUpPlan = searchParams.get('plan') || undefined;
 
-      // Register using V2 endpoint (matches original app)
-      const { data } = await httpRegisterWithEmailV2(
+      // Register using V2 endpoint
+      const { data: registerData } = await httpRegisterWithEmailV2(
         formData.email,
         formData.password,
         cfToken || 'cf-token-placeholder', // Cloudflare token - in production, use actual Turnstile
@@ -66,51 +66,61 @@ export default function RegisterPage() {
         signUpPlan
       );
 
-      // If registration returns tokens directly (some APIs do this)
-      if (data.token) {
-        httpTokens.token = data.token;
-        httpTokens.refreshToken = data.refreshToken;
-        httpTokens.wsToken = data.wsToken;
+      console.log('✅ Registration successful, attempting auto-login...');
 
-        doSetUser({
-          _id: data.user._id,
-          appId: data.user.appId,
-          firstName: data.user.firstName,
-          lastName: data.user.lastName,
-          homeScreen: data.user.homeScreen || '',
-          isAgreeWithTerms: data.user.isAgreeWithTerms || false,
-          isAssetsOpen: data.user.isAssetsOpen || false,
-          isProfileOpen: data.user.isProfileOpen || false,
-          token: data.token,
-          refreshToken: data.refreshToken,
-          wsToken: data.wsToken,
-          walletAddress: data.user.defaultWallet?.walletAddress || '',
-          xmppPassword: data.user.xmppPassword || '',
-          xmppUsername: data.user.xmppUsername || '',
-          profileImage: data.user.profileImage || '',
-          description: data.user.description || '',
-          defaultWallet: {
-            walletAddress: data.user.defaultWallet?.walletAddress || '',
-          },
-          email: data.user.email,
-          orgId: data.user.orgId,
-          theme: data.user.theme as 'light' | 'dark' | 'system' | undefined,
-        });
-
-        toast.success('Registration successful!');
-        router.push('/');
-      } else {
-        // Registration successful but requires email verification
-        toast.success('Registration successful! Please check your email to verify your account.');
-        router.push('/login');
-      }
-    } catch (error: any) {
-      console.error('Registration error:', error);
-      toast.error(
-        error.response?.data?.message ||
-          error.response?.data?.error ||
-          'Registration failed. Please try again.'
+      // Auto-login after successful registration using V1 endpoint
+      const { data: loginData } = await httpLoginWithEmail(
+        formData.email,
+        formData.password
       );
+
+      // Set tokens from login response
+      httpTokens.token = loginData.token;
+      httpTokens.refreshToken = loginData.refreshToken;
+      httpTokens.wsToken = loginData.wsToken;
+
+      // Set user data in store
+      doSetUser({
+        _id: loginData.user._id,
+        appId: loginData.user.appId,
+        firstName: loginData.user.firstName,
+        lastName: loginData.user.lastName,
+        homeScreen: loginData.user.homeScreen || '',
+        isAgreeWithTerms: loginData.user.isAgreeWithTerms || false,
+        isAssetsOpen: loginData.user.isAssetsOpen || false,
+        isProfileOpen: loginData.user.isProfileOpen || false,
+        token: loginData.token,
+        refreshToken: loginData.refreshToken,
+        wsToken: loginData.wsToken,
+        walletAddress: loginData.user.defaultWallet?.walletAddress || '',
+        xmppPassword: loginData.user.xmppPassword || '',
+        xmppUsername: loginData.user.xmppUsername || '',
+        profileImage: loginData.user.profileImage || '',
+        description: loginData.user.description || '',
+        defaultWallet: {
+          walletAddress: loginData.user.defaultWallet?.walletAddress || '',
+        },
+        email: loginData.user.email,
+        orgId: loginData.user.orgId,
+        theme: loginData.user.theme as 'light' | 'dark' | 'system' | undefined,
+      });
+
+      toast.success('Registration successful! Logging you in...');
+      router.push('/');
+    } catch (error: any) {
+      console.error('Registration/Login error:', error);
+      
+      // Check if registration succeeded but login failed
+      if (error.config?.url?.includes('login-with-email')) {
+        toast.error('Registration successful but auto-login failed. Please login manually.');
+        router.push('/login');
+      } else {
+        toast.error(
+          error.response?.data?.message ||
+            error.response?.data?.error ||
+            'Registration failed. Please try again.'
+        );
+      }
     } finally {
       setLoading(false);
     }
