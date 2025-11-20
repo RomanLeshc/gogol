@@ -14,8 +14,11 @@ import { useAppStore } from '@/lib/store';
 import { toast } from 'react-toastify';
 import { FileUploader } from './FileUploader';
 import { UrlInput } from './UrlInput';
+import { CreationProgress } from './CreationProgress';
 
 type Step = 'sources' | 'add-website' | 'add-documents' | 'settings' | 'finalize';
+type CreationStep = 'creating' | 'indexing-websites' | 'uploading-documents' | 'finalizing' | 'complete';
+
 
 interface WebsiteSource {
   url: string;
@@ -34,6 +37,7 @@ export function OnboardWizard() {
   const { doAddApp } = useAppStore();
   const [step, setStep] = useState<Step>('sources');
   const [loading, setLoading] = useState(false);
+  const [creationStep, setCreationStep] = useState<CreationStep>('creating');
   
   // Multiple website sources
   const [websiteSources, setWebsiteSources] = useState<WebsiteSource[]>([]);
@@ -51,6 +55,7 @@ export function OnboardWizard() {
     allowedDomains: [],
     isPublic: false,
   });
+
 
   const handleAddWebsite = () => {
     if (!currentWebsiteUrl.trim()) {
@@ -87,6 +92,7 @@ export function OnboardWizard() {
     }
 
     setLoading(true);
+    setCreationStep('creating');
 
     try {
       // Step 1: Create the app/agent
@@ -95,6 +101,7 @@ export function OnboardWizard() {
 
       // Step 2: Add website sources (if any)
       if (websiteSources.length > 0) {
+        setCreationStep('indexing-websites');
         const websitePromises = websiteSources.map((source) =>
           setSourcesSiteCrawl(appId, source.url, source.followLink)
         );
@@ -104,16 +111,18 @@ export function OnboardWizard() {
 
       // Step 3: Upload documents (if any)
       if (uploadedFiles.length > 0) {
-          try {
-            await setSourcesSiteFiles(appId, uploadedFiles);
-
-            toast.success(`${uploadedFiles.length} document(s) uploaded successfully`);
-          } catch (error) {
-            console.error(`Failed to upload files:`, error);
-            throw error;
-          }
-
+        setCreationStep('uploading-documents');
+        try {
+          await setSourcesSiteFiles(appId, uploadedFiles);
+          toast.success(`${uploadedFiles.length} document(s) uploaded successfully`);
+        } catch (error) {
+          console.error(`Failed to upload files:`, error);
+          throw error;
+        }
       }
+      
+      // Step 4: Finalize
+      setCreationStep('finalizing');
       
       // If no sources added, that's fine - user can add them later!
 
@@ -128,8 +137,15 @@ export function OnboardWizard() {
       //   },
       // });
 
+      // Small delay to show finalizing step
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      setCreationStep('complete');
       doAddApp(appData.app);
       toast.success('Agent created successfully!');
+      
+      // Small delay before redirect to show completion
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
       // Redirect to agent detail page with overview tab open
       router.push(`/agents/${appId}#overview`);
@@ -141,11 +157,20 @@ export function OnboardWizard() {
     }
   };
 
+
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-3xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+    <>
+      <CreationProgress
+        isCreating={loading}
+        currentStep={creationStep}
+        websiteCount={websiteSources.length}
+        documentCount={uploadedFiles.length}
+      />
+      
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-950 py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-3xl mx-auto">
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
             Create Your AI Agent
           </h1>
           <p className="text-gray-600 dark:text-gray-400">
@@ -477,6 +502,7 @@ export function OnboardWizard() {
         </AnimatePresence>
       </div>
     </div>
+    </>
   );
 }
 
