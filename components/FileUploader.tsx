@@ -178,8 +178,8 @@ export function FileUploader({
     <div
       key={file.id}
       className={`relative w-[130px] h-[130px] border-2 rounded-lg p-2 flex flex-col items-center justify-center cursor-pointer transition-all duration-200
-        ${file.file ? 'border-yellow-900 bg-yellow-500' : 'border-gray-300 bg-gray-500'}
-        hover:border-black hover:bg-gray-900`}
+        ${file.file ? 'dark:border-yellow-900 dark:bg-yellow-500 border-yellow-500 bg-yellow-300' : 'dark:border-gray-300 dark:bg-gray-500 border-gray-300 bg-gray-500'}
+        hover:dark:border-black hover:dark:bg-gray-900 hover:border-gray-300 hover:bg-gray-100`}
     >
       <button
         onClick={(e) => {
@@ -212,8 +212,8 @@ export function FileUploader({
     onDrop={handleDrop}
     className={`border-2 rounded-lg flex flex-col items-center justify-center cursor-pointer transition-all duration-200
       ${allFiles.length === 0 ? 'w-full h-40' : 'w-[130px] h-[130px]'}
-      ${isDragging ? 'border-black bg-gray-900' : 'border-gray-300 bg-gray-700'}
-      hover:border-black hover:bg-gray-900`}
+      ${isDragging ? 'dark:border-black dark:bg-gray-900' : 'dark:border-gray-300 dark:bg-gray-700'}
+      hover:dark:border-black hover:dark:bg-gray-900`}
   >
     <svg
       xmlns="http://www.w3.org/2000/svg"
