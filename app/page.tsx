@@ -76,6 +76,7 @@ export default function HomePage() {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       <Header />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="flex items-center justify-between">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
             Your AI Agents
@@ -83,6 +84,16 @@ export default function HomePage() {
           <p className="mt-2 text-gray-600 dark:text-gray-400">
             Manage and interact with your AI agents
           </p>
+        </div>
+
+        <div>
+          <Link
+            href="/onboard"
+            className="inline-flex items-center px-4 py-2 border border-brand-500 text-base font-medium rounded-md text-brand-500 hover:bg-brand-50 dark:hover:bg-brand-900/20 transition-all duration-200 hover:scale-105 active:scale-95"
+          >
+            + Create New Agent
+          </Link>
+        </div>
         </div>
 
         {apps.length === 0 ? (
@@ -131,14 +142,7 @@ export default function HomePage() {
           </div>
         )}
 
-        <div className="mt-8">
-          <Link
-            href="/onboard"
-            className="inline-flex items-center px-4 py-2 border border-brand-500 text-base font-medium rounded-md text-brand-500 hover:bg-brand-50 dark:hover:bg-brand-900/20 transition-all duration-200 hover:scale-105 active:scale-95"
-          >
-            + Create New Agent
-          </Link>
-        </div>
+        
       </div>
     </div>
   );

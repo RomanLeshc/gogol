@@ -1,14 +1,17 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAppStore } from '@/lib/store';
 import { httpLogout } from '@/lib/api';
 import { ThemeToggle } from './ThemeToggle';
+import { LogoutModal } from './LogoutModal';
 
 export function Header() {
   const router = useRouter();
   const { currentUser, doClearState } = useAppStore();
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
 
   const handleLogout = async () => {
     try {
@@ -34,12 +37,13 @@ export function Header() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center gap-8">
-            <Link
-              href="/"
+            <div
               className="text-xl font-bold text-gray-900 dark:text-white"
             >
               Gogol Agents
-            </Link>
+            </div>
+            <div className="w-px h-4 bg-gray-200 dark:bg-gray-600" />
+            
             {currentUser && (
               <nav className="hidden md:flex items-center gap-6">
                 <Link
@@ -73,16 +77,24 @@ export function Header() {
           <div className="flex items-center gap-4">
             {currentUser && (
               <>
-                <ThemeToggle />
+                
                 <div className="flex items-center gap-3">
                   <span className="text-sm text-gray-600 dark:text-gray-400">
                     {currentUser.firstName} {currentUser.lastName}
                   </span>
+                  
+                  <div className="w-px h-4 bg-gray-200 dark:bg-gray-600" />
+
+                  <ThemeToggle />
+                  <div className="w-px h-4 bg-gray-200 dark:bg-gray-600" />
+
                   <button
-                    onClick={handleLogout}
+                    onClick={() => setIsLogoutModalOpen(true)}
                     className="text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-all duration-200 hover:scale-105 active:scale-95"
                   >
-                    Logout
+                    <span className="text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-all duration-200 hover:scale-105 active:scale-95">
+                      Logout
+                    </span>
                   </button>
                 </div>
               </>
@@ -90,6 +102,12 @@ export function Header() {
           </div>
         </div>
       </div>
+
+      <LogoutModal
+        isOpen={isLogoutModalOpen}
+        onClose={() => setIsLogoutModalOpen(false)}
+        onConfirm={handleLogout}
+      />
     </header>
   );
 }

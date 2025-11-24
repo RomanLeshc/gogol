@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -11,10 +11,12 @@ import {
   setSourcesSiteFiles,
 } from '@/lib/api';
 import { useAppStore } from '@/lib/store';
+import { Files } from '@/lib/types';
 import { toast } from 'react-toastify';
 import { FileUploader } from './FileUploader';
 import { UrlInput } from './UrlInput';
 import { CreationProgress } from './CreationProgress';
+import { saveWizardData, loadWizardData, clearWizardData } from '@/lib/onboardStorage';
 
 type Step = 'sources' | 'add-website' | 'add-documents' | 'settings' | 'finalize';
 type CreationStep = 'creating' | 'indexing-websites' | 'uploading-documents' | 'finalizing' | 'complete';
@@ -44,8 +46,8 @@ export function OnboardWizard() {
   const [currentWebsiteUrl, setCurrentWebsiteUrl] = useState('');
   const [currentFollowLink, setCurrentFollowLink] = useState(true);
   
-  // Document upload
-  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
+  // Document upload - use Files[] internally, convert to File[] only when needed
+  const [uploadedFiles, setUploadedFiles] = useState<Files[]>([]);
   const [uploadProgress, setUploadProgress] = useState<Record<string, number>>({});
   
   // Agent settings
@@ -55,6 +57,57 @@ export function OnboardWizard() {
     allowedDomains: [],
     isPublic: false,
   });
+
+  // Track if component is initialized to prevent saving during initial load
+  const isInitialized = useRef(false);
+  const isSavingRef = useRef(false);
+
+  // Load saved data on mount
+  useEffect(() => {
+    const savedData = loadWizardData();
+    if (savedData) {
+      setStep(savedData.step);
+      setWebsiteSources(savedData.websiteSources);
+      setCurrentWebsiteUrl(savedData.currentWebsiteUrl);
+      setCurrentFollowLink(savedData.currentFollowLink);
+      // Convert File[] to Files[] for internal state
+      const filesAsFiles: Files[] = savedData.uploadedFiles.map((file) => ({
+        id: `saved-${Date.now()}-${Math.random()}`,
+        createdAt: new Date().toISOString(),
+        md: '',
+        mdByteSize: file.size,
+        url: file.name,
+        file: file,
+      }));
+      setUploadedFiles(filesAsFiles);
+      setAgentSettings(savedData.agentSettings);
+    }
+    isInitialized.current = true;
+  }, []);
+
+  // Save data whenever it changes (debounced)
+  // useEffect(() => {
+  //   if (!isInitialized.current || isSavingRef.current) return;
+
+  //   const timeoutId = setTimeout(async () => {
+  //     isSavingRef.current = true;
+  //     // Convert Files[] to File[] for saving
+  //     const filesAsFileArray = uploadedFiles.map((f) => f.file!).filter(Boolean);
+  //     await saveWizardData({
+  //       step,
+  //       websiteSources,
+  //       uploadedFiles: filesAsFileArray,
+  //       agentSettings,
+  //       currentWebsiteUrl,
+  //       currentFollowLink,
+  //     });
+  //     isSavingRef.current = false;
+  //   }, 500); // Debounce saves by 500ms
+
+  //   return () => {
+  //     clearTimeout(timeoutId);
+  //   };
+  // }, [step, websiteSources, uploadedFiles, agentSettings, currentWebsiteUrl, currentFollowLink]);
 
 
   const handleAddWebsite = () => {
@@ -113,8 +166,10 @@ export function OnboardWizard() {
       if (uploadedFiles.length > 0) {
         setCreationStep('uploading-documents');
         try {
-          await setSourcesSiteFiles(appId, uploadedFiles);
-          toast.success(`${uploadedFiles.length} document(s) uploaded successfully`);
+          // Convert Files[] to File[] for API call
+          const filesToUpload = uploadedFiles.map((f) => f.file!).filter(Boolean);
+          await setSourcesSiteFiles(appId, filesToUpload);
+          toast.success(`${filesToUpload.length} document(s) uploaded successfully`);
         } catch (error) {
           console.error(`Failed to upload files:`, error);
           throw error;
@@ -143,6 +198,9 @@ export function OnboardWizard() {
       setCreationStep('complete');
       doAddApp(appData.app);
       toast.success('Agent created successfully!');
+      
+      // Clear saved wizard data after successful creation
+      clearWizardData();
       
       // Small delay before redirect to show completion
       await new Promise(resolve => setTimeout(resolve, 1000));
@@ -297,7 +355,18 @@ export function OnboardWizard() {
                 </h3>
                 <FileUploader
                   files={uploadedFiles}
-                  onFilesChange={setUploadedFiles}
+                  onFilesChange={(files: File[]) => {
+                    // Convert File[] to Files[] for internal state
+                    const filesAsFiles: Files[] = files.map((file) => ({
+                      id: `new-${Date.now()}-${Math.random()}`,
+                      createdAt: new Date().toISOString(),
+                      md: '',
+                      mdByteSize: file.size,
+                      url: file.name,
+                      file: file,
+                    }));
+                    setUploadedFiles(filesAsFiles);
+                  }}
                   progress={uploadProgress}
                   acceptedTypes=".pdf,.docx,.txt"
                 />
@@ -471,7 +540,7 @@ export function OnboardWizard() {
                     )}
                     {uploadedFiles.length > 0 && (
                       <p className="text-gray-900 dark:text-white">
-                        {uploadedFiles.length} document(s): {uploadedFiles.map(f => f.name).join(', ')}
+                        {uploadedFiles.length} document(s): {uploadedFiles.map(f => f.url || f.file?.name || 'Unknown').join(', ')}
                       </p>
                     )}
                     {websiteSources.length === 0 && uploadedFiles.length === 0 && (

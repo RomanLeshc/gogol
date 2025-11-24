@@ -6,6 +6,7 @@ import { httpRegisterWithEmailV2, httpLoginWithEmail, httpTokens } from '@/lib/a
 import { useAppStore } from '@/lib/store';
 import { toast } from 'react-toastify';
 import Link from 'next/link';
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -152,7 +153,10 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-950 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-950 px-4 relative">
+      <div className="absolute top-4 right-4">
+        <ThemeToggle />
+      </div>
       <div className="max-w-md w-full space-y-8">
         <div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900 dark:text-white">
@@ -289,7 +293,7 @@ export default function RegisterPage() {
             </div>
           </div>
 
-          <div className="mt-6 grid grid-cols-3 gap-3">
+          <div className="mt-6 flex justify-center">
             <button
               onClick={() => handleSocialRegister('google')}
               disabled={loading}
@@ -301,7 +305,7 @@ export default function RegisterPage() {
                 'Google'
               )}
             </button>
-            <button
+            {/* <button
               onClick={() => handleSocialRegister('apple')}
               disabled={loading}
               className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm bg-white dark:bg-gray-800 text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -314,7 +318,7 @@ export default function RegisterPage() {
               className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm bg-white dark:bg-gray-800 text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Facebook
-            </button>
+            </button> */}
           </div>
         </div>
       </div>

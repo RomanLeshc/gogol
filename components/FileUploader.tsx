@@ -1,27 +1,30 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Dispatch, SetStateAction, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Files } from '@/lib/types';
 
 interface FileUploaderProps {
-  files: Files[] | File[];
+  files: Files[];
   onFilesChange: (files: File[]) => void;
   onDeleteFile?: (fileId: string) => void;
   onRemoveFileFromUpload?: (fileName: string) => void;
   progress?: Record<string, number>;
   acceptedTypes?: string;
+  localFiles?: Files[];
+  setLocalFiles?: Dispatch<SetStateAction<Files[]>>
 }
 
 export function FileUploader({
   files,
+  localFiles,
+  setLocalFiles,
   onFilesChange,
   onDeleteFile,
   onRemoveFileFromUpload,
   progress = {},
   acceptedTypes = '.pdf,.docx,.txt',
 }: FileUploaderProps) {
-  const [localFiles, setLocalFiles] = useState<Files[]>([]);
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploadedFiles, setUploadedFiles] = useState<Files[]>([]);
@@ -29,27 +32,29 @@ export function FileUploader({
   const isInitializedRef = useRef<boolean>(false);
 
   useEffect(() => {
-    if (!isInitializedRef.current && files) {
-      setInitialFiles(files as Files[] || []);
-      isInitializedRef.current = true;
+    if (files) {
+      setInitialFiles(files);
+      if (!isInitializedRef.current) {
+        isInitializedRef.current = true;
+      }
     }
   }, [files]);
 
   const allFiles: Files[] = useMemo(() => {
-    return [...initialFiles, ...uploadedFiles, ...localFiles];
+    return [...initialFiles, ...uploadedFiles, ...(localFiles || [])];
   }, [initialFiles, uploadedFiles, localFiles]);
 
   const handleSetFiles = async () => {
-    const filesToUpload = localFiles.filter((f) => f.file);
+    const filesToUpload = localFiles?.filter((f) => f.file);
     
-    if (filesToUpload.length === 0) {
+    if (filesToUpload?.length === 0) {
       console.warn('No files to upload');
       return;
     }
     
     try {
-      const fileObjects = filesToUpload.map((f) => f.file!);
-      onFilesChange(fileObjects);
+      const fileObjects = filesToUpload?.map((f) => f.file!);
+      onFilesChange(fileObjects || []);
     } catch (error) {
       console.error('Error setting files', error);
     }
@@ -67,7 +72,7 @@ export function FileUploader({
       file: file,
     }));
 
-    setLocalFiles((prev) => [...prev, ...newFiles]);
+    setLocalFiles?.((prev) => [...prev, ...newFiles]);
     
     const fileObjects = newFiles.map((f) => f.file!);
     onFilesChange(fileObjects);
@@ -111,11 +116,11 @@ export function FileUploader({
   };
 
   const handleRemoveFile = async (fileId: string) => {
-    const isLocalFile = localFiles.some((f) => f.id === fileId && f.file);
+    const isLocalFile = localFiles?.some((f) => f.id === fileId && f.file);
     
     if (isLocalFile) {
-      const fileToRemove = localFiles.find((f) => f.id === fileId);
-      setLocalFiles((prev) => prev.filter((f) => f.id !== fileId));
+      const fileToRemove = localFiles?.find((f) => f.id === fileId);
+      setLocalFiles?.((prev) => prev.filter((f) => f.id !== fileId));
       
       if (fileToRemove && onRemoveFileFromUpload) {
         const fileName = fileToRemove.url.split('/').pop() || fileToRemove.url;
@@ -161,7 +166,8 @@ export function FileUploader({
     );
   };
 
-  const getFileName = (url: string): string => {
+  const getFileName = (url: string | undefined): string => {
+    if (!url) return 'Unknown file';
     return url.split('/').pop() || url;
   };
 

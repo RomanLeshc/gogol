@@ -1,5 +1,8 @@
-import { ModelApp } from '@/lib/types';
+'use client';
+
+import { Files, ModelApp } from '@/lib/types';
 import { FileUploader } from '@/components/FileUploader';
+import { useState } from 'react';
 
 interface DocumentsTabProps {
   app: ModelApp;
@@ -22,6 +25,8 @@ export function DocumentsTab({
   onDeleteFile,
   onRemoveFileFromUpload,
 }: DocumentsTabProps) {
+  const [localFiles, setLocalFiles] = useState<Files[]>([]);
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -41,6 +46,8 @@ export function DocumentsTab({
           onRemoveFileFromUpload={onRemoveFileFromUpload}
           progress={uploadProgress}
           acceptedTypes=".pdf,.docx,.txt"
+          localFiles={localFiles}
+          setLocalFiles={setLocalFiles}
         />
         {uploadedFiles.length > 0 && (
           <button
@@ -49,7 +56,9 @@ export function DocumentsTab({
               e.preventDefault();
               e.stopPropagation();
               try {
-                await onUpload();
+                await onUpload().then(() => {
+                  setLocalFiles([]);
+                });
               } catch (error) {
                 console.error('Upload error:', error);
               }

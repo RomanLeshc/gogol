@@ -35,9 +35,7 @@ export default function SimpleAdminPage() {
     setTogglingId(app._id);
     try {
       const newStatus = app.aiBot?.status === 'on' ? 'off' : 'on';
-      await httpUpdateApp(app._id, {
-        aiBot: { ...app.aiBot!, status: newStatus },
-      });
+      await httpUpdateApp(app._id, { botStatus: newStatus });
       toast.success(`Agent ${newStatus === 'on' ? 'enabled' : 'disabled'}`);
       const { data: appsData } = await httpGetApps({});
       doSetApps(appsData.apps || []);
