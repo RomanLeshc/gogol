@@ -117,7 +117,7 @@ export default function HomePage() {
             value={limit}
             onChange={(newLimit) => {
               setLimit(newLimit);
-              setOffset(0); // Reset to first page when changing limit
+              setOffset(0);
             }}
           />
           <Link
