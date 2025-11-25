@@ -91,7 +91,7 @@ export default function AgentDetailPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-6">
           <Link
-            href="/agents"
+            href="/"
             className="text-sm text-brand-600 hover:text-brand-700 mb-4 inline-block"
           >
             ← Back to Agents

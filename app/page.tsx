@@ -4,18 +4,52 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAppStore } from '@/lib/store';
 import { httpGetApps, httpGetOneUser } from '@/lib/api';
-import { handleApiError } from '@/lib/api';
 import { toast } from 'react-toastify';
 import Link from 'next/link';
 import { Header } from '@/components/Header';
+import { Pagination } from '@/components/Pagination';
+import { ItemsPerPageSelector } from '@/components/ItemsPerPageSelector';
 
 export default function HomePage() {
   const router = useRouter();
-  const { currentUser, apps, doSetUser, doSetApps } = useAppStore();
+  const { currentUser, doSetUser } = useAppStore();
   const [loading, setLoading] = useState(true);
+  const [apps, setApps] = useState<any[]>([]);
+  const [limit, setLimit] = useState(5);
+  const [offset, setOffset] = useState(0);
+  const [total, setTotal] = useState(0);
 
+  // Load apps with pagination
   useEffect(() => {
-    // Check if user is authenticated
+    const loadApps = async () => {
+      try {
+        setLoading(true);
+        const { data: appsData } = await httpGetApps({ limit, offset });
+
+        console.log('appsData', appsData);
+
+        const appsList = appsData.apps || [];
+        setApps(appsList);
+        
+        // Set total from response, fallback to apps length if not provided
+        setTotal(appsData.total !== undefined ? appsData.total : appsList.length);
+      } catch (error: any) {
+        console.error('Error loading apps:', error);
+        toast.error(error?.response?.data?.error || 'Failed to load apps. Please try again.');
+        setApps([]);
+        setTotal(0);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (currentUser) {
+      loadApps();
+    }
+  }, [limit, offset, currentUser]);
+
+  // Check authentication on mount
+  useEffect(() => {
     const checkAuth = async () => {
       try {
         setLoading(true);
@@ -23,35 +57,26 @@ export default function HomePage() {
         if (data && data.user) {
           doSetUser(data.user);
         } else {
-          // If no user data, redirect to login
           router.push('/login');
           return;
         }
         
-        // Check if user has completed onboarding (has at least one app/agent)
-        // Use limit 5 (API minimum requirement) but we only need to check if any exist
-        const { data: appsData } = await httpGetApps({ limit: 5 });
-        doSetApps(appsData.apps || []);
+        // Check if user has completed onboarding
+        const { data: appsData } = await httpGetApps({ limit: 5, offset: 0 });
+        const appsList = appsData.apps || [];
         
-        if (!appsData.apps || appsData.apps.length === 0) {
-          // Redirect to onboarding if no agents exist
+        if (appsList.length === 0) {
           router.push('/onboard');
           return;
         }
       } catch (error: any) {
         console.error('Auth check error:', error);
         
-        // Only redirect to login on authentication errors (401)
-        // Don't logout on validation errors (400) or other API errors
         if (error?.response?.status === 401) {
-          // Authentication failed, redirect to login
           router.push('/login');
         } else {
-          // Other errors (validation, network, etc.) - show error but don't logout
           console.error('Non-auth error during app check:', error?.response?.data || error?.message);
           toast.error(error?.response?.data?.error || 'Failed to load apps. Please try again.');
-          // Still set empty apps array to prevent infinite loops
-          doSetApps([]);
         }
       } finally {
         setLoading(false);
@@ -59,7 +84,7 @@ export default function HomePage() {
     };
 
     checkAuth();
-  }, [router, doSetUser, doSetApps]);
+  }, [router, doSetUser]);
 
   if (loading || !currentUser) {
     return (
@@ -73,7 +98,8 @@ export default function HomePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex flex-col justify-between">
+      <div>
       <Header />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex items-center justify-between">
@@ -86,7 +112,14 @@ export default function HomePage() {
           </p>
         </div>
 
-        <div>
+        <div className="flex items-center gap-4">
+          <ItemsPerPageSelector
+            value={limit}
+            onChange={(newLimit) => {
+              setLimit(newLimit);
+              setOffset(0); // Reset to first page when changing limit
+            }}
+          />
           <Link
             href="/onboard"
             className="inline-flex items-center px-4 py-2 border border-brand-500 text-base font-medium rounded-md text-brand-500 hover:bg-brand-50 dark:hover:bg-brand-900/20 transition-all duration-200 hover:scale-105 active:scale-95"
@@ -141,9 +174,22 @@ export default function HomePage() {
             ))}
           </div>
         )}
-
-        
       </div>
+      </div>
+
+       {/* Pagination - only show if total exceeds limit */}
+       {total > limit && (
+          <div className="mb-8">
+            <Pagination
+              currentPage={Math.floor(offset / limit) + 1}
+              totalPages={Math.ceil(total / limit)}
+              onPageChange={(page) => {
+                setOffset((page - 1) * limit);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+            />
+          </div>
+        )}
     </div>
   );
 }
