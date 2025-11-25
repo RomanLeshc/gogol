@@ -14,8 +14,9 @@ import { TabNavigation } from './components/TabNavigation';
 import { useAgentData } from './hooks/useAgentData';
 import { useAgentHandlers } from './hooks/useAgentHandlers';
 import { copyToClipboard } from './utils/clipboard';
+import { PromptTab } from './components/PromptTab';
 
-type Tab = 'overview' | 'documents' | 'indexing' | 'settings' | 'chat';
+type Tab = 'overview' | 'documents' | 'prompt' | 'indexing' | 'settings' | 'chat';
 
 export default function AgentDetailPage() {
   const params = useParams();
@@ -125,6 +126,13 @@ export default function AgentDetailPage() {
               onUpload={handleUploadDocuments}
               onDeleteFile={handlers.handleDeleteDocument}
               onRemoveFileFromUpload={handleRemoveFileFromUpload}
+            />
+          )}
+          {activeTab === 'prompt' && (
+            <PromptTab
+              loading={handlers.saving}
+              app={app}
+              onUpdate={handlers.handleUpdateSettings}
             />
           )}
           {activeTab === 'indexing' && (

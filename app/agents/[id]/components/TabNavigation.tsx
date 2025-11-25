@@ -1,4 +1,4 @@
-type Tab = 'overview' | 'documents' | 'indexing' | 'settings' | 'chat';
+type Tab = 'overview' | 'documents' | 'prompt' | 'indexing' | 'settings' | 'chat';
 
 interface TabNavigationProps {
   activeTab: Tab;
@@ -9,6 +9,7 @@ export function TabNavigation({ activeTab, onTabChange }: TabNavigationProps) {
   const tabs: Array<{ id: Tab; label: string }> = [
     { id: 'overview', label: 'Overview' },
     { id: 'documents', label: 'Documents' },
+    { id: 'prompt', label: 'Prompt' },
     { id: 'indexing', label: 'Indexing' },
     { id: 'settings', label: 'Settings' },
     { id: 'chat', label: 'Chat Preview' },

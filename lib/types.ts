@@ -152,6 +152,7 @@ export interface ModelApp {
   aiBot: ModelAIbot;
 
   botStatus?: 'on' | 'off';
+  botPrompt?: string;
 }
 
 export interface ModelAiWidgetValues {
