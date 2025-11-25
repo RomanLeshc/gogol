@@ -108,7 +108,7 @@ export function IndexingTab({
                   </div>
                   <button
                     type="button"
-                    onClick={() => onDeleteUrl(site.url)}
+                    onClick={() => onDeleteUrl(site.id)}
                     className="ml-4 text-red-500 hover:text-red-700 transition-all duration-200 hover:scale-110 active:scale-95"
                     title="Remove URL"
                   >

@@ -1,4 +1,7 @@
+'use client';
+
 import { ModelApp } from '@/lib/types';
+import { useState } from 'react';
 
 interface OverviewTabProps {
   app: ModelApp;
@@ -8,13 +11,20 @@ interface OverviewTabProps {
 }
 
 export function OverviewTab({ app, agentId, copiedEmbed, onCopyEmbed }: OverviewTabProps) {
+  const [displayName, setDisplayName] = useState<string>('');
+  const [avatar, setAvatar] = useState<string>('');
+  
+  // const getScriptSnippet = () => {
+  //   const apiBase =
+  //     process.env.NEXT_PUBLIC_API_BASE ||
+  //     process.env.NEXT_PUBLIC_API_V1 ||
+  //     'https://api.ethoradev.com/v1';
+  //   const embedKey = process.env.NEXT_PUBLIC_EMBED_KEY || '';
+  //   return `<script src="${typeof window !== 'undefined' ? window.location.origin : ''}/embed.js" data-agent-id="${agentId}" data-api-base="${apiBase}" data-embed-key="${embedKey}" data-position="bottom-right"></script>`;
+  // };
+
   const getScriptSnippet = () => {
-    const apiBase =
-      process.env.NEXT_PUBLIC_API_BASE ||
-      process.env.NEXT_PUBLIC_API_V1 ||
-      'https://api.ethoradev.com/v1';
-    const embedKey = process.env.NEXT_PUBLIC_EMBED_KEY || '';
-    return `<script src="${typeof window !== 'undefined' ? window.location.origin : ''}/embed.js" data-agent-id="${agentId}" data-api-base="${apiBase}" data-embed-key="${embedKey}" data-position="bottom-right"></script>`;
+    return `<script src="https://widget.ethora.com/assistant.js" id="chat-content-assistant" data-bot-id="${app._id}_${agentId}-bot@xmpp.ethoradev.com" ${displayName ? `data-bot-display-name="${displayName}"` : ''} ${avatar ? `data-bot-avatar="${avatar}"` : ''}></script>`;
   };
 
   const getNpmSnippet = () => {
@@ -93,6 +103,39 @@ initEthoraWidget({
         <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
           Copy the code below to embed this AI agent on your website.
         </p>
+
+        <div className="flex flex-col md:flex-row justify-between items-center gap-2 mb-8">
+            <div className="md:w-1/2 w-full">
+              <p className="font-sans text-sm pb-4 flex items-center gap-1">
+                Which Display Name should the bot use?
+              </p>
+              <input
+                type="text"
+                maxLength={24}
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                placeholder="Display name"
+                value={displayName}
+                onChange={(e) => {
+                  setDisplayName(e.target.value);
+                }}
+              />
+            </div>
+
+            <div className="md:w-1/2 w-full">
+              <p className="font-sans text-sm pb-4 flex items-center gap-1">
+                Bot avatar URL (optional)
+              </p>
+              <input
+                type="text"
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                placeholder="url"
+                value={avatar}
+                onChange={(e) => {
+                  setAvatar(e.target.value);
+                }}
+              />
+            </div>
+          </div>
 
         <div className="mb-6">
           <div className="flex items-center justify-between mb-2">
